@@ -127,7 +127,7 @@ public class Scheduler implements Runnable{
 		}
 		
 		// returns true when elevator reached the destination
-		public boolean isOnDestinatiom() {
+		public boolean isOnDestination() {
 			return onDestination;
 		}
 
