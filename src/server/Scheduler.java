@@ -3,7 +3,7 @@ package server;
 import java.util.LinkedList;
 import java.util.Queue;
 
-public class Scheduler {
+public class Scheduler implements Runnable{
 	
 	private boolean inProcess, isAvailable, onDestination;  		// true means elevator is in process, initially is false until it gets request from floor system
 	private Queue<Object> floorRequests; 							//requests from floor system
@@ -134,6 +134,14 @@ public class Scheduler {
 		// returns true when elevator is available
 		public boolean isAvailable() {
 			return isAvailable;
+		}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			while(true) {
+				
+			}
 		}
 
 }
