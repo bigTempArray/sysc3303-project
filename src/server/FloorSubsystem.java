@@ -29,7 +29,7 @@ public class FloorSubsystem implements Runnable{
         Queue<Passenger> passengers=new LinkedList<>();
         passengers=readFile();
         while(true){
-            if(scheduler.isOnDestinatiom()){
+            if(scheduler.isOnDestination()){
                 System.out.println("Passenger has reached its destination");
             }
             if(scheduler.isAvailable()) {
