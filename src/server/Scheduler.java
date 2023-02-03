@@ -6,7 +6,7 @@ import java.util.Queue;
 public class Scheduler implements Runnable{
 	
 	private boolean inProcess, isAvailable, onDestination;  		// true means elevator is in process, initially is false until it gets request from floor system
-	private Queue<Object> floorRequests; 							//requests from floor system
+	private Queue<Passenger> floorRequests; 							//requests from floor system
 	private int elevatorLocation, destination;						//where elevator is and where is going to
 	
 	public Scheduler () {
@@ -21,7 +21,7 @@ public class Scheduler implements Runnable{
 	
 	//function receives request from floor system
 
-	public synchronized void makeFloorRequest(Object request) {
+	public synchronized void makeFloorRequest(Passenger request) {
 		
 		//if is not available is true means elevator is in process and floor has to wait
 		while (!isAvailable) {
@@ -46,7 +46,7 @@ public class Scheduler implements Runnable{
 	 * the function returns the passenger request to elevator and starts the process 
 	 */
 	
-	public synchronized Object getNextRequest() {
+	public synchronized Passenger getNextRequest() {
 		
 		//while elevator is still available means there is no request that have been made
 		while (isAvailable) {
@@ -57,7 +57,7 @@ public class Scheduler implements Runnable{
             }
         }
 		
-		Object nextPassemger=floorRequests.remove();
+		Passenger nextPassemger=floorRequests.remove();
 		inProcess=true;
 		return nextPassemger;
 	}
