@@ -20,6 +20,11 @@ Eric: Testing/uml diagram
         - Passenger.java
         - Scheduler.java
 
+    - tests
+        - ElevatorTest.java
+        - FloorTest.java
+        - SchedulerTest.java
+
 # Running the program
 Run the main method inside Driver.java to start the program
 
