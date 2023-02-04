@@ -27,7 +27,7 @@ class ElevatorTest {
          * used to reduce the amount of code needed from repeating lines of
          * instantiation.
          */
-        defaultLift = new Elevator(scheduler, 10, 1);
+        defaultLift = new Elevator(scheduler, 10);
     }
 
     @Test

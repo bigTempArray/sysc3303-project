@@ -1,5 +1,6 @@
 package elevators;
 import server.Scheduler;
+import server.Passenger;
 
 /**
  * Elevator class which represents the
@@ -41,15 +42,11 @@ public class Elevator implements Runnable{
      * @param buttonPressed which button has been pressed within elevator
      *
      */
-    public Elevator(Scheduler scheduler, int highestFloor, int buttonPressed){
+    public Elevator(Scheduler scheduler, int highestFloor){
         numberOfFloors = highestFloor;
         buttons = new boolean[numberOfFloors];
         lamps = new boolean[numberOfFloors];
         doors = true;
-
-        //Simulating button press on class creation
-        buttons[buttonPressed-1] = true;
-        lamps[buttonPressed-1] = true;
     }
 
     /**
@@ -62,5 +59,21 @@ public class Elevator implements Runnable{
     public void run(){
         // Call will depend on scheduler's class. Needs to be filled out.
         //scheduler.sendLamps(boolean lamps);
+    	while (true) {
+    		Passenger person = scheduler.getNextRequest();
+    		int buttonPressed = person.getCarButton();
+    		
+            //Simulating button press on class creation
+            buttons[buttonPressed-1] = true;
+            lamps[buttonPressed-1] = true;
+            
+            scheduler.sendlamps(lamps);    		
+            
+    	}
     }
+    
+    
+    
+    
+    
 }
