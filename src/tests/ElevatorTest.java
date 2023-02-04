@@ -1,22 +1,24 @@
-package elevators;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import server.Scheduler;
+/**
+ * 
+ */
+package tests;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Unit tests for elevator class
- * These tests check the integrity
- * and correctness of the Elevator as a class
- * rather than a thread. ALl thread related tests
- * are handled by the main or scheduler test class.
- */
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
+import elevators.Elevator;
+import server.Scheduler;
+
+/**
+ * @author abdul
+ *
+ */
 class ElevatorTest {
 
-    Scheduler scheduler = new Scheduler();
+	Scheduler scheduler = new Scheduler();
     Elevator defaultLift;
 
     @BeforeEach
