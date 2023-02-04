@@ -63,29 +63,7 @@ public class Scheduler implements Runnable {
 		Passenger nextPassenger = floorRequests.remove();
 		destination = nextPassenger.getCarButton();
 		inProcess = true;
-		this.isAvailable = false;
 		return nextPassenger;
-	}
-
-	// lamps [] booleans
-	// iterate through array and find the destination floor
-	// function return destination=-1 if there is no button pressed
-	public synchronized int sendLamps(boolean lamps[]) {
-		while (inProcess) {
-			try {
-				wait();
-			} catch (InterruptedException e) {
-				System.err.println(e);
-			}
-		}
-
-		// elevator thread
-		for (int i = 0; i < lamps.length; i++) {
-			if (lamps[i]) {
-				destination = i + 1;
-			}
-		}
-		return destination;
 	}
 
 	// keeps track where the elevator is, during the process
@@ -122,7 +100,7 @@ public class Scheduler implements Runnable {
 	}
 
 	// sends the location of elevator(the floor level)
-	public int getElevatorUpdates() {
+	public int getElevatorLocation() {
 		return elevatorLocation;
 	}
 
@@ -131,9 +109,17 @@ public class Scheduler implements Runnable {
 		return onDestination;
 	}
 
+	public int getDestination() {
+		return destination;
+	}
+
 	// returns true when elevator is available
 	public boolean isAvailable() {
 		return isAvailable;
+	}
+
+	public boolean isInProcess() {
+		return inProcess;
 	}
 
 	public synchronized void startMotor() {
