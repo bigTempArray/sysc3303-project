@@ -1,8 +1,8 @@
 # Tasks:
-Mayilen: Floor subsystem/sequence diagram
-Abdul: Elevators
-Ben: Scheduler
-Eric: Testing/uml diagram
+- Mayilen: Floor subsystem/sequence diagram
+- Abdul: Elevators
+- Ben: Scheduler
+- Eric: Testing/uml diagram
 
 # Files
 - diagrams
@@ -11,6 +11,7 @@ Eric: Testing/uml diagram
         - UML-diagram.png    
 - src
     - Driver.java
+    - input.txt (the input file)
 
     - elevators
         - Elevator.java
