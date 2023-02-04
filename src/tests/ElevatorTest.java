@@ -13,7 +13,7 @@ import elevators.Elevator;
 import server.Scheduler;
 
 /**
- * @author eric
+ * @author abdul
  *
  */
 class ElevatorTest {
