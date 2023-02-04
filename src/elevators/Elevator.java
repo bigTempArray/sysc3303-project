@@ -43,6 +43,7 @@ public class Elevator implements Runnable{
      *
      */
     public Elevator(Scheduler scheduler, int highestFloor){
+        this.scheduler = scheduler;
         numberOfFloors = highestFloor;
         buttons = new boolean[numberOfFloors];
         lamps = new boolean[numberOfFloors];
@@ -67,7 +68,8 @@ public class Elevator implements Runnable{
             buttons[buttonPressed-1] = true;
             lamps[buttonPressed-1] = true;
             
-            scheduler.sendlamps(lamps);    		
+            // scheduler.sendLamps(lamps);
+            scheduler.sendElevatorUpdates(buttonPressed);
             
     	}
     }
