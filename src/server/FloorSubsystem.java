@@ -37,10 +37,10 @@ public class FloorSubsystem implements Runnable{
                 scheduler.makeFloorRequest(passengers.remove());
             }
             if(scheduler.isOnDestination()&&passengers.isEmpty()){
+                System.out.println("Passenger has reached its destination");
                 System.exit(0);
             }
         }
-
     }
     /**
      * Method responsible for reading the input file and saving it into a queue of passsengers that will be sent to the scheduler
