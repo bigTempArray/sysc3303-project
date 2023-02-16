@@ -17,7 +17,7 @@ public class Elevator implements Runnable{
     private boolean buttons[]; // true means pressed, false otherwise
     private boolean lamps[];  // true means lights on, false otherwise
     private boolean doors;   // true is open, false is closed
-    private Object engine = new Object(); // Placeholder datatype for engine
+    private Object engine = new Object(); // Placeholder data type for engine
     private Scheduler scheduler; // elevator's communication line with the scheduler
 
     //Basic getters for some essential elevator attributes
