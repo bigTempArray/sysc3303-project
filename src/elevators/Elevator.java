@@ -139,6 +139,7 @@ public class Elevator implements Runnable{
     		
     		//Reached passenger now loading inside car
     		elevatorState = State.stopped;
+    		carLocation = passengerFloor;
     		doors = true;
     		elevatorState = State.loading;
     		doors = false;
@@ -163,6 +164,7 @@ public class Elevator implements Runnable{
     		
     		//Reached Destination now unloading 
     		elevatorState = State.stopped;
+    		carLocation = buttonPressed;
     		doors = true;
     		elevatorState = State.unLoading;
     		//Perhaps add delay here in future for loading/unloading times?
