@@ -2,14 +2,28 @@ package server;
 
 import java.util.LinkedList;
 import java.util.Queue;
-
+/**
+ * 
+ * @author ben
+ */
 public class Scheduler implements Runnable {
-
+	
+	
+	 /**
+	  * Scheduler states
+	  * AVAILABLE is when elevator is not in process
+	  *IN_PROCESS is elevator is processing the request
+	  */
+	enum State{
+		AVAILABLE,
+		IN_PROCESS
+	}
+	
 	private boolean inProcess, isAvailable, onDestination; // true means elevator is in process, initially is false
 															// until it gets request from floor system
 	private Queue<Passenger> floorRequests; // requests from floor system
 	private int elevatorLocation, destination; // where elevator is and where is going to
-
+	private State curState;
 	public Scheduler() {
 		inProcess = false;
 		isAvailable = true;
@@ -17,6 +31,7 @@ public class Scheduler implements Runnable {
 		elevatorLocation = 0;
 		destination = -1;
 		onDestination = false;
+		curState=State.AVAILABLE;
 
 	}
 
@@ -24,21 +39,7 @@ public class Scheduler implements Runnable {
 
 	public synchronized void makeFloorRequest(Passenger request) {
 
-		// if is not available is true means elevator is in process and floor has to
-		// wait
-		while (!isAvailable) {
-			try {
-				wait();
-			} catch (InterruptedException e) {
-				System.err.println(e);
-			}
-		}
-
-		// after receiving request from floor it adds on queue
-		// make inProcess true
-		// and notify all threads
 		floorRequests.add(request);
-		isAvailable = false;
 		onDestination = false;
 		notifyAll();
 
@@ -52,17 +53,16 @@ public class Scheduler implements Runnable {
 
 		// while elevator is still available means there is no request that have been
 		// made
-		while (isAvailable) {
+		while (inProcess || floorRequests.isEmpty()) {
 			try {
 				wait();
 			} catch (InterruptedException e) {
 				System.err.println(e);
 			}
 		}
-
 		Passenger nextPassenger = floorRequests.remove();
 		destination = nextPassenger.getCarButton();
-		inProcess = true;
+		changeState();
 		return nextPassenger;
 	}
 
@@ -84,13 +84,12 @@ public class Scheduler implements Runnable {
 
 		// if elevatorLocation==destination means that elevator reached the destination
 		// elevator is not longer in process
-		// and elevator is available
 		if (elevatorLocation == destination) {
-			onDestination = true;
-			inProcess = false;
-			isAvailable = true;
-			destination = -1;
-
+			
+			//changing scheduler state
+			changeState();
+			
+//			System.out.println("SCHEDULER: Passenger has reached its destination ");
 			notifyAll();
 			return true;
 		}
@@ -98,28 +97,50 @@ public class Scheduler implements Runnable {
 		return false;
 
 	}
+	
+	/**
+	 * this function changes state according to current state
+	 */
+	public void changeState() {
+		switch(curState) {
+			case AVAILABLE:
+				inProcess = true;
+				curState=State.IN_PROCESS;
+				break;
+			case IN_PROCESS:
+				onDestination = true;
+				inProcess = false;
+				destination = -1;
+				curState=State.AVAILABLE;
+				break;
+		}
+	}
 
 	// sends the location of elevator(the floor level)
-	public int getElevatorLocation() {
+	public synchronized int getElevatorLocation() {
 		return elevatorLocation;
 	}
 
 	// returns true when elevator reached the destination
-	public boolean isOnDestination() {
+	public synchronized boolean isOnDestination() {
 		return onDestination;
 	}
 
-	public int getDestination() {
+	public synchronized int getDestination() {
 		return destination;
 	}
 
 	// returns true when elevator is available
-	public boolean isAvailable() {
+	public synchronized boolean isAvailable() {
 		return isAvailable;
 	}
 
-	public boolean isInProcess() {
+	public synchronized boolean isInProcess() {
 		return inProcess;
+	}
+	
+	public synchronized State getCurState() {
+		return curState;
 	}
 
 	public synchronized void startMotor() {
