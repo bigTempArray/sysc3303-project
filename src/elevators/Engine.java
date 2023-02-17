@@ -32,7 +32,7 @@ public class Engine {
 	 * @param topSpeed Median time to travel when engine at top speed.
 	 * @param topSpeedD Standard deviation for topSpeed.
 	 * @Param rampUpD The median time it takes to travel between floors between start and max speed
-	 * 
+	 * (All speeds and deviations are in the unit of seconds/floor)
 	 * Note: 'D' stands for delay and 'S' stands for standard deviation.
 	 */
 	public Engine(double firstFloorD, double firstFloorS,
