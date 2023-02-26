@@ -57,14 +57,7 @@ public class Elevator implements Runnable{
      * of operations, etc. 
      * 
      */
-    enum State {
-    	standBy,
-    	traversingUp,
-    	traversingDown,
-    	loading,
-    	unLoading,
-    	stopped
-    }
+    
 
     //Basic getters for some essential elevator attributes
     public int getNumberOfFloors() {
@@ -104,22 +97,22 @@ public class Elevator implements Runnable{
         elevatorAvailable();
     }
     //event for loading elevator
-    private void loadElevator() {
+    public void loadElevator() {
     	doors = true;
     	elevatorState=State.loading;
     }
   //event for unloading elevator
-    private void unLoadElevator() {
+    public void unLoadElevator() {
     	doors = true;
     	elevatorState=State.unLoading;
     }
   //event for stopping elevator
-    private void elevatorStop() {
+    public void elevatorStop() {
     	doors = false;
     	elevatorState=State.stopped;
     }
   //event for traversing up or down
-    private void traverse(int floor) {
+    public void traverse(int floor) {
     	doors = false;
     	if(carLocation<floor) {
     		elevatorState = State.traversingUp;
@@ -128,7 +121,7 @@ public class Elevator implements Runnable{
     	}
     }
   //event for elevator being on standby or free
-    private void elevatorAvailable() {
+    public void elevatorAvailable() {
     	doors = true;
     	elevatorState=State.standBy;
     }

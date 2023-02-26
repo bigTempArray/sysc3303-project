@@ -10,6 +10,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import elevators.Elevator;
+import elevators.State;
 import server.Scheduler;
 
 /**
@@ -36,6 +37,31 @@ class ElevatorTest {
     @DisplayName("Elevator can correctly be created")
     public void basicElevatorCheck(){
         assertEquals(10, defaultLift.getNumberOfFloors());
+    }
+    @Test
+    public void loadElevatorCheck(){
+    	defaultLift.loadElevator();
+        assertEquals(State.loading, defaultLift.getState());
+    }
+    @Test
+    public void unloadElevatorCheck(){
+    	defaultLift.unLoadElevator();
+        assertEquals(State.unLoading, defaultLift.getState());
+    }
+    @Test
+    public void elevatorStopCheck(){
+    	defaultLift.elevatorStop();
+        assertEquals(State.stopped, defaultLift.getState());
+    }
+    @Test
+    public void traverseCheck(){
+    	defaultLift.traverse(2);
+        assertEquals(State.traversingUp, defaultLift.getState());
+    }
+    @Test
+    public void elevatorAvailableCheck(){
+    	defaultLift.elevatorAvailable();
+        assertEquals(State.standBy, defaultLift.getState());
     }
 
 }
