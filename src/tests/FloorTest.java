@@ -29,7 +29,7 @@ class FloorTest {
 		Queue<Passenger> passengerQueue = this.floor.readFile();
 
 		// assert there are 3 passengers in the queue
-		assertEquals(3, passengerQueue.size());
+		assertEquals(3, passengerQueue.size()); 
 
 		// assert the times are correct
 		assertEquals("14:05:15.0", passengerQueue.poll().getTime());
