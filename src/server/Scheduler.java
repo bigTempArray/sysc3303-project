@@ -14,7 +14,7 @@ public class Scheduler implements Runnable {
 	  * AVAILABLE is when elevator is not in process
 	  *IN_PROCESS is elevator is processing the request
 	  */
-	enum State{
+	enum SchedulerState {
 		AVAILABLE,
 		IN_PROCESS
 	}
@@ -23,7 +23,7 @@ public class Scheduler implements Runnable {
 															// until it gets request from floor system
 	private Queue<Passenger> floorRequests; // requests from floor system
 	private int elevatorLocation, destination; // where elevator is and where is going to
-	private State curState;
+	private SchedulerState curState;
 	public Scheduler() {
 		inProcess = false;
 		isAvailable = true;
@@ -31,7 +31,7 @@ public class Scheduler implements Runnable {
 		elevatorLocation = 0;
 		destination = -1;
 		onDestination = false;
-		curState=State.AVAILABLE;
+		curState=SchedulerState.AVAILABLE;
 
 	}
 
@@ -105,13 +105,13 @@ public class Scheduler implements Runnable {
 		switch(curState) {
 			case AVAILABLE:
 				inProcess = true;
-				curState=State.IN_PROCESS;
+				curState=SchedulerState.IN_PROCESS;
 				break;
 			case IN_PROCESS:
 				onDestination = true;
 				inProcess = false;
 				destination = -1;
-				curState=State.AVAILABLE;
+				curState=SchedulerState.AVAILABLE;
 				break;
 		}
 	}
@@ -139,7 +139,7 @@ public class Scheduler implements Runnable {
 		return inProcess;
 	}
 	
-	public synchronized State getCurState() {
+	public synchronized SchedulerState getCurState() {
 		return curState;
 	}
 
