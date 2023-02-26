@@ -33,8 +33,10 @@ public class FloorSubsystem implements Runnable{
                 System.out.println("Passenger has reached its destination");
             }
             if(scheduler.isAvailable()) {
-                System.out.println("Passenger queued");
-                scheduler.makeFloorRequest(passengers.remove());
+            	if(!passengers.isEmpty()) {
+	                System.out.println("Passenger queued");
+	                scheduler.makeFloorRequest(passengers.remove());
+            	}
             }
             if(scheduler.isOnDestination()&&passengers.isEmpty()){
                 System.out.println("Passenger has reached its destination");
