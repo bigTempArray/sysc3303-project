@@ -160,11 +160,11 @@ public class Elevator implements Runnable{
 			}
     		
     		//Reached passenger now loading inside car
-    		elevatorStop();
+    		
     		carLocation = passengerFloor;
     		
     		loadElevator();
-    		
+    		elevatorStop();
     		//Passenger choosing their destination
     		int buttonPressed = person.getCarButton();
     		
