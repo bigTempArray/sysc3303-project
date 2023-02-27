@@ -58,14 +58,7 @@ public class Elevator implements Runnable {
      * of operations, etc.
      * 
      */
-    enum State {
-        standBy,
-        traversingUp,
-        traversingDown,
-        loading,
-        unLoading,
-        stopped
-    }
+   
 
     // Basic getters for some essential elevator attributes
     public int getNumberOfFloors() {
