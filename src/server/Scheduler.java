@@ -36,7 +36,7 @@ public class Scheduler implements Runnable {
 
 	}
 
-	// FLOOR THREAD
+	// [Floor Thread]
 	public synchronized void makeFloorRequest(Passenger request) {
 		this.requiresPassengers = false;
 		floorRequests.add(request);
@@ -46,12 +46,10 @@ public class Scheduler implements Runnable {
 	}
 
 	/**
-	 * the function returns the passenger request to elevator and starts the process
+	 * [Elevator Thread]: the function returns the passenger request to elevator and starts the process
 	 */
-
 	public synchronized Passenger getNextRequest() {
-		// while elevator is still available means there is no request that have been
-		// made
+		// while elevator is still available means there is no request that have been made
 		while (inProcess || floorRequests.isEmpty()) {
 			try {
 				wait();
@@ -79,7 +77,6 @@ public class Scheduler implements Runnable {
 		}
 
 		System.out.println("Passenger has reached its destination");
-		notifyAll();
 	}
 
 	/**
