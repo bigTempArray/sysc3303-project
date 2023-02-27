@@ -14,10 +14,6 @@ public class Scheduler implements Runnable {
 	 * AVAILABLE is when elevator is not in process
 	 * IN_PROCESS is elevator is processing the request
 	 */
-	enum SchedulerState {
-		AVAILABLE,
-		IN_PROCESS
-	}
 
 	private boolean inProcess, isAvailable, onDestination, requiresPassengers; // true means elevator is in process,
 																				// initially is false

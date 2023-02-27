@@ -14,7 +14,7 @@ import elevators.Engine;
  * @author abdul
  *
  */
-class EngineTest {
+public class EngineTest {
 
     @Test
     public void BasicEngineTravel(){

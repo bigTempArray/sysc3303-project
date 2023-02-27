@@ -10,7 +10,6 @@ import java.util.Queue;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import elevators.Elevator;
 import server.FloorSubsystem;
 import server.Passenger;
 import server.Scheduler;
