@@ -72,7 +72,7 @@ public class Scheduler implements Runnable {
 		// while the elevator is not in process and destination button haven't been
 		// pressed yet,
 		// elevator should not be able to send updates
-
+//		System.out.println("SCHEDULER: updates ");
 		while (!inProcess && destination != -1) {
 			try {
 				wait();
@@ -89,7 +89,12 @@ public class Scheduler implements Runnable {
 			//changing scheduler state
 			changeState();
 			
-//			System.out.println("SCHEDULER: Passenger has reached its destination ");
+			System.out.println("SCHEDULER: Passenger has reached its destination ");
+			
+			if(floorRequests.isEmpty()) {
+				System.exit(0);
+			}
+			
 			notifyAll();
 			return true;
 		}
@@ -117,29 +122,29 @@ public class Scheduler implements Runnable {
 	}
 
 	// sends the location of elevator(the floor level)
-	public synchronized int getElevatorLocation() {
+	public int getElevatorLocation() {
 		return elevatorLocation;
 	}
 
 	// returns true when elevator reached the destination
-	public synchronized boolean isOnDestination() {
+	public boolean isOnDestination() {
 		return onDestination;
 	}
 
-	public synchronized int getDestination() {
+	public int getDestination() {
 		return destination;
 	}
 
 	// returns true when elevator is available
-	public synchronized boolean isAvailable() {
+	public boolean isAvailable() {
 		return isAvailable;
 	}
 
-	public synchronized boolean isInProcess() {
+	public boolean isInProcess() {
 		return inProcess;
 	}
 	
-	public synchronized SchedulerState getCurState() {
+	public SchedulerState getCurState() {
 		return curState;
 	}
 

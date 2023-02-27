@@ -118,7 +118,6 @@ public class Elevator implements Runnable{
     		Passenger person = scheduler.getNextRequest();
     		//Once the request is taken all the related information
     		// of the destination is taken from the passenger class
-    		
     		//Going to passenger 
     		doors = false;
     		elevatorState = State.stopped;
@@ -157,7 +156,7 @@ public class Elevator implements Runnable{
     		}//If neither then the car will not hit a traversing state 
     		tripDelay = (long) motor.traverseFloors(carLocation, buttonPressed) * 1000; //Converting to milliseconds
     		try {
-				Thread.sleep(tripDelay);
+				Thread.sleep(10);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
