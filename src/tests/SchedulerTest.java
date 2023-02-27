@@ -34,7 +34,7 @@ class SchedulerTest {
 		scheduler.makeFloorRequest(passengers.poll());
 
 		// * elevator is currently not available
-//		assertEquals(scheduler.isAvailable(), false);
+		// assertEquals(scheduler.isAvailable(), false);
 		assertEquals(scheduler.isOnDestination(), false);
 	}
 
@@ -49,7 +49,7 @@ class SchedulerTest {
 		scheduler.makeFloorRequest(passengers.poll());
 
 		// elevator is currently not available
-//		assertEquals(false, scheduler.isAvailable());
+		// assertEquals(false, scheduler.isAvailable());
 		assertEquals(false, scheduler.isOnDestination());
 
 		// * elevator is not in use yet, and does not have a destination
@@ -75,7 +75,7 @@ class SchedulerTest {
 		scheduler.makeFloorRequest(passengers.poll());
 
 		// elevator is currently not available
-//		assertEquals(false, scheduler.isAvailable());
+		// assertEquals(false, scheduler.isAvailable());
 		assertEquals(false, scheduler.isOnDestination());
 
 		// elevator is not in use yet, and does not have a destination
@@ -92,12 +92,8 @@ class SchedulerTest {
 		// * elevator is currently at the 0th floor
 		assertEquals(0, scheduler.getElevatorLocation());
 
-		// * elevator reached the first floor
-		scheduler.sendElevatorUpdates(1);
-		assertEquals(1, scheduler.getElevatorLocation());
-		
 		// * elevator reached the fourth floor (the destination)
-		scheduler.sendElevatorUpdates(4);
+		scheduler.reachedDestination();
 		assertEquals(4, scheduler.getElevatorLocation());
 		assertEquals(true, scheduler.isOnDestination());
 		assertEquals(false, scheduler.isInProcess());
