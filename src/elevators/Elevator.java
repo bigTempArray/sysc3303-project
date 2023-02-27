@@ -1,6 +1,7 @@
 package elevators;
 
 import server.Scheduler;
+import states.ElevatorState;
 import server.Passenger;
 
 /**
@@ -20,7 +21,7 @@ public class Elevator implements Runnable {
     private boolean doors; // true is open, false is closed
     private Engine motor;
     private Scheduler scheduler; // elevator's communication line with the scheduler
-    private State elevatorState; // Contains the current state of the elevator in state machine fashion
+    private ElevatorState elevatorState; // Contains the current state of the elevator in state machine fashion
 
     /**
      * Collection of all possible elevator states
@@ -58,7 +59,6 @@ public class Elevator implements Runnable {
      * of operations, etc.
      * 
      */
-   
 
     // Basic getters for some essential elevator attributes
     public int getNumberOfFloors() {
@@ -73,7 +73,7 @@ public class Elevator implements Runnable {
         return carLocation;
     }
 
-    public State getState() {
+    public ElevatorState getState() {
         return elevatorState;
     }
 
@@ -96,35 +96,41 @@ public class Elevator implements Runnable {
         carLocation = 1;
         elevatorAvailable();
     }
-    //event for loading elevator
+
+    // event for loading elevator
     public void loadElevator() {
-    	doors = true;
-    	elevatorState=State.loading;
+        doors = true;
+        elevatorState = ElevatorState.loading;
     }
-  //event for unloading elevator
+
+    // event for unloading elevator
     public void unLoadElevator() {
-    	doors = true;
-    	elevatorState=State.unLoading;
+        doors = true;
+        elevatorState = ElevatorState.unLoading;
     }
-  //event for stopping elevator
+
+    // event for stopping elevator
     public void elevatorStop() {
-    	doors = false;
-    	elevatorState=State.stopped;
+        doors = false;
+        elevatorState = ElevatorState.stopped;
     }
-  //event for traversing up or down
+
+    // event for traversing up or down
     public void traverse(int floor) {
-    	doors = false;
-    	if(carLocation<floor) {
-    		elevatorState = State.traversingUp;
-    	}else {
-    		elevatorState = State.traversingDown;
-    	}
+        doors = false;
+        if (carLocation < floor) {
+            elevatorState = ElevatorState.traversingUp;
+        } else {
+            elevatorState = ElevatorState.traversingDown;
+        }
     }
-  //event for elevator being on standby or free
+
+    // event for elevator being on standby or free
     public void elevatorAvailable() {
-    	doors = true;
-    	elevatorState=State.standBy;
+        doors = true;
+        elevatorState = ElevatorState.standBy;
     }
+
     /**
      * Thread runnable, upon start() it will use the constructed object's
      * parameters to send the scheduler the designated floor that was pressed.
@@ -144,13 +150,13 @@ public class Elevator implements Runnable {
 
             // Going to passenger
             doors = false;
-            elevatorState = State.stopped;
+            elevatorState = ElevatorState.stopped;
             int passengerFloor = person.getFloor();
 
             if (passengerFloor > carLocation) {
-                elevatorState = State.traversingUp;
+                elevatorState = ElevatorState.traversingUp;
             } else if (passengerFloor < carLocation) {
-                elevatorState = State.traversingDown;
+                elevatorState = ElevatorState.traversingDown;
             } // If neither then the car will not hit a traversing state
 
             long tripDelay = (long) motor.traverseFloors(carLocation, passengerFloor) * 1000; // Converting to
@@ -162,10 +168,10 @@ public class Elevator implements Runnable {
             }
 
             // Reached passenger now loading inside car
-            elevatorState = State.stopped;
+            elevatorState = ElevatorState.stopped;
             carLocation = passengerFloor;
             doors = true;
-            elevatorState = State.loading;
+            elevatorState = ElevatorState.loading;
             doors = false;
             // Passenger choosing their destination
             int buttonPressed = person.getCarButton();
@@ -175,9 +181,9 @@ public class Elevator implements Runnable {
 
             // Taking passenger to destination
             if (buttonPressed > carLocation) {
-                elevatorState = State.traversingUp;
+                elevatorState = ElevatorState.traversingUp;
             } else if (buttonPressed < carLocation) {
-                elevatorState = State.traversingDown;
+                elevatorState = ElevatorState.traversingDown;
             } // If neither then the car will not hit a traversing state
             tripDelay = (long) motor.traverseFloors(carLocation, buttonPressed) * 1000; // Converting to milliseconds
             try {
@@ -187,15 +193,15 @@ public class Elevator implements Runnable {
             }
 
             // Reached Destination now unloading
-            elevatorState = State.stopped;
+            elevatorState = ElevatorState.stopped;
             carLocation = buttonPressed;
             doors = true;
-            elevatorState = State.unLoading;
+            elevatorState = ElevatorState.unLoading;
             // Perhaps add delay here in future for loading/unloading times?
 
             // Got to target floor then gives update to the scheduler
             scheduler.reachedDestination();
-            elevatorState = State.standBy;
+            elevatorState = ElevatorState.standBy;
             buttons[buttonPressed - 1] = false; // Button light is now off once delivery complete
         }
     }

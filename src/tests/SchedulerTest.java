@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import server.FloorSubsystem;
 import server.Passenger;
 import server.Scheduler;
-import server.SchedulerState;
+import states.SchedulerState;
 
 /**
  * @author eric

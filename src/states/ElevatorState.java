@@ -1,13 +1,13 @@
 /**
  * 
  */
-package elevators;
+package states;
 
 /**
  * @author mayil
- *enum for elevator state
+ *         enum for elevator state
  */
-public enum State {
+public enum ElevatorState {
 	standBy,
 	traversingUp,
 	traversingDown,

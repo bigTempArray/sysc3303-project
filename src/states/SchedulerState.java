@@ -1,4 +1,4 @@
-package server;
+package states;
 
 public enum SchedulerState {
     AVAILABLE,
