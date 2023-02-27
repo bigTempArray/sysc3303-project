@@ -101,9 +101,37 @@ public class Elevator implements Runnable {
         // Instantiating engine specification
         motor = new Engine(10, 1.1, 3, 2, 0.3, 4); // See engine class for parameter details
         carLocation = 1;
-        elevatorState = State.standBy;
+        elevatorAvailable();
     }
-
+    //event for loading elevator
+    public void loadElevator() {
+    	doors = true;
+    	elevatorState=State.loading;
+    }
+  //event for unloading elevator
+    public void unLoadElevator() {
+    	doors = true;
+    	elevatorState=State.unLoading;
+    }
+  //event for stopping elevator
+    public void elevatorStop() {
+    	doors = false;
+    	elevatorState=State.stopped;
+    }
+  //event for traversing up or down
+    public void traverse(int floor) {
+    	doors = false;
+    	if(carLocation<floor) {
+    		elevatorState = State.traversingUp;
+    	}else {
+    		elevatorState = State.traversingDown;
+    	}
+    }
+  //event for elevator being on standby or free
+    public void elevatorAvailable() {
+    	doors = true;
+    	elevatorState=State.standBy;
+    }
     /**
      * Thread runnable, upon start() it will use the constructed object's
      * parameters to send the scheduler the designated floor that was pressed.

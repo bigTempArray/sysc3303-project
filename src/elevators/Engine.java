@@ -13,13 +13,13 @@ import java.util.Random;
  */
 public class Engine {
 	
-	double firstFloorMedianDelay;
-	double firstFloorStd;
-	double topSpeedMedianDelay;
-	double topSpeedStd;
-	double rampingUpDelay;
-	int maxSpeedDelay;
-	Random rng = new Random();
+	private double firstFloorMedianDelay;
+	private double firstFloorStd;
+	private double topSpeedMedianDelay;
+	private double topSpeedStd;
+	private double rampingUpDelay;
+	private int maxSpeedDelay;
+	private Random rng = new Random();
 	
 	/**
 	 * The constructor that specifies all the 
