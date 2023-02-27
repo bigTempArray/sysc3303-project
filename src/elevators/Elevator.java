@@ -162,11 +162,11 @@ public class Elevator implements Runnable {
 
             long tripDelay = (long) motor.traverseFloors(carLocation, passengerFloor) * 1000; // Converting to
                                                                                               // milliseconds
-            // try {
-            // Thread.sleep(tripDelay);
-            // } catch (InterruptedException e) {
-            // e.printStackTrace();
-            // }
+            try {
+                Thread.sleep(tripDelay);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
 
             // Reached passenger now loading inside car
             elevatorState = State.stopped;
@@ -187,11 +187,11 @@ public class Elevator implements Runnable {
                 elevatorState = State.traversingDown;
             } // If neither then the car will not hit a traversing state
             tripDelay = (long) motor.traverseFloors(carLocation, buttonPressed) * 1000; // Converting to milliseconds
-            // try {
-            // Thread.sleep(tripDelay);
-            // } catch (InterruptedException e) {
-            // e.printStackTrace();
-            // }
+            try {
+                Thread.sleep(tripDelay);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
 
             // Reached Destination now unloading
             elevatorState = State.stopped;
