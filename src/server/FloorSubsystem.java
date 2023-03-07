@@ -29,17 +29,15 @@ public class FloorSubsystem implements Runnable{
         Queue<Passenger> passengers=new LinkedList<>();
         passengers=readFile();
         while(true){
-            if(scheduler.isOnDestination()){
-                System.out.println("Passenger has reached its destination");
-            }
             if(scheduler.isAvailable()) {
             	if(!passengers.isEmpty()) {
 	                System.out.println("Passenger queued");
 	                scheduler.makeFloorRequest(passengers.remove());
             	}
             }
-            if(scheduler.isOnDestination()&&passengers.isEmpty()){
-                System.out.println("Passenger has reached its destination");
+            
+            // if passenger queue empty and scheduler requires passenger then exit
+            if(passengers.isEmpty() && scheduler.requiresPassengers()){
                 System.exit(0);
             }
         }

@@ -10,10 +10,10 @@ import java.util.Queue;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import elevators.Elevator;
 import server.FloorSubsystem;
 import server.Passenger;
 import server.Scheduler;
+import states.SchedulerState;
 
 /**
  * @author eric
@@ -34,7 +34,7 @@ class SchedulerTest {
 		scheduler.makeFloorRequest(passengers.poll());
 
 		// * elevator is currently not available
-//		assertEquals(scheduler.isAvailable(), false);
+		// assertEquals(scheduler.isAvailable(), false);
 		assertEquals(scheduler.isOnDestination(), false);
 	}
 
@@ -49,10 +49,11 @@ class SchedulerTest {
 		scheduler.makeFloorRequest(passengers.poll());
 
 		// elevator is currently not available
-//		assertEquals(false, scheduler.isAvailable());
+		// assertEquals(false, scheduler.isAvailable());
 		assertEquals(false, scheduler.isOnDestination());
 
 		// * elevator is not in use yet, and does not have a destination
+		assertEquals(SchedulerState.AVAILABLE, scheduler.getCurState());
 		assertEquals(false, scheduler.isInProcess());
 		assertEquals(-1, scheduler.getDestination());
 
@@ -60,6 +61,7 @@ class SchedulerTest {
 		scheduler.getNextRequest();
 
 		// * elevator should be in use now, and heading to a destination
+		assertEquals(SchedulerState.IN_PROCESS, scheduler.getCurState());
 		assertEquals(true, scheduler.isInProcess());
 		assertEquals(4, scheduler.getDestination());
 	}
@@ -75,10 +77,11 @@ class SchedulerTest {
 		scheduler.makeFloorRequest(passengers.poll());
 
 		// elevator is currently not available
-//		assertEquals(false, scheduler.isAvailable());
+		// assertEquals(false, scheduler.isAvailable());
 		assertEquals(false, scheduler.isOnDestination());
 
 		// elevator is not in use yet, and does not have a destination
+		assertEquals(SchedulerState.AVAILABLE, scheduler.getCurState());
 		assertEquals(false, scheduler.isInProcess());
 		assertEquals(-1, scheduler.getDestination());
 
@@ -86,18 +89,16 @@ class SchedulerTest {
 		scheduler.getNextRequest();
 
 		// * elevator should be in use now, and heading to a destination
+		assertEquals(SchedulerState.IN_PROCESS, scheduler.getCurState());
 		assertEquals(true, scheduler.isInProcess());
 		assertEquals(4, scheduler.getDestination());
 
 		// * elevator is currently at the 0th floor
 		assertEquals(0, scheduler.getElevatorLocation());
 
-		// * elevator reached the first floor
-		scheduler.sendElevatorUpdates(1);
-		assertEquals(1, scheduler.getElevatorLocation());
-		
-		// * elevator reached the fourth floor (the destination)
-		scheduler.sendElevatorUpdates(4);
+		// * elevator thread -> reached the fourth floor (the destination)
+		scheduler.reachedDestination();
+		assertEquals(SchedulerState.AVAILABLE, scheduler.getCurState());
 		assertEquals(4, scheduler.getElevatorLocation());
 		assertEquals(true, scheduler.isOnDestination());
 		assertEquals(false, scheduler.isInProcess());
