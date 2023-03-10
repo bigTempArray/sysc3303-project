@@ -194,6 +194,11 @@ public class Elevator implements Runnable {
             scheduler.reachedDestination();
             elevatorState = ElevatorState.standBy;
             buttons[buttonPressed - 1] = false; // Button light is now off once delivery complete
+            
+            //Perhaps once in standby from the scheduler's requests elevator should check 
+            //that there are no more buttons[] pressed by checking if any buttons are still
+            //pressed, and if they are it calls a function to traverse to that floor in which
+            //it drops off the remaining passengers...
         }
     }
     

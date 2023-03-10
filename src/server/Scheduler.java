@@ -7,7 +7,7 @@ import states.SchedulerState;
 
 /**
  * 
- * @author ben
+ * @author ben, Abdul
  */
 public class Scheduler implements Runnable {
 
@@ -23,11 +23,14 @@ public class Scheduler implements Runnable {
 	private Queue<Passenger> floorRequests; // requests from floor system
 	private int elevatorLocation, destination; // where elevator is and where is going to
 	private SchedulerState curState;
+	private LinkedList<CarInstance> elevatorList;
+	
 
 	public Scheduler() {
 		inProcess = false;
 		isAvailable = true;
 		floorRequests = new LinkedList<>();
+		elevatorList = new LinkedList<CarInstance>();
 		elevatorLocation = 0;
 		destination = -1;
 		onDestination = false;
@@ -77,6 +80,65 @@ public class Scheduler implements Runnable {
 		}
 
 		System.out.println("Passenger has reached its destination");
+	}
+	
+	/**
+	 * Method that checks elevatorList for all potential 
+	 * elevators to send a request to and returns the most 
+	 * suitable one for the given job. Calculates based on
+	 * availability, distance, and direction. 
+	 * @param targetFloor the floor to which the chosen elevator 
+	 * will be requested to go to. 
+	 * @return the chosen elevator's index within the elevatorList. 
+	 */
+	private int findBestElevator(int targetFloor) {
+		int[] eligibilityTable = new int[elevatorList.size()];
+		
+		
+		//Iterating through the list of candidates 
+		for (int elevator = 0; elevator < elevatorList.size(); elevator++) {
+			//Scoring priority amount of car priority (the lower the better)
+			int priority = 0;
+			
+			//Standby skips further evaluation as its the better candidate for a request
+			if (elevatorList.get(elevator).isOnStandby()) {
+				eligibilityTable[elevator] = priority;
+				continue;
+			}
+			
+			//If too close to destination (to prevent race conditions)
+			if (Math.abs(targetFloor - elevatorList.get(elevator).getCurrentFloor()) < 2) {
+				priority += 20; //Ideally should be half of highest floor number
+			}
+			priority += Math.abs(targetFloor - elevatorList.get(elevator).getCurrentFloor());
+			
+			//Evaluating if elevator is matching the direction of the target floor 
+			if (targetFloor - elevatorList.get(elevator).getCurrentFloor() > 0) { // if target is on top of current car
+				if (elevatorList.get(elevator).isAscending()) { // car is already going up towards the target 
+					priority += 4;
+				}else {
+					priority += 8;
+				}
+			}else {
+				if (elevatorList.get(elevator).isAscending()) {
+					priority += 8;
+				}else {
+					priority += 4;
+				}
+			}
+			eligibilityTable[elevator] = priority; //Adding the priority value
+		}
+		//Iterating through array and returning the smallest element's 
+		//index which is the best suited car for the next request. 
+		int index = 0;
+	    int min = eligibilityTable[index];
+	    for (int element = 1; element < eligibilityTable.length; element++){
+	        if (eligibilityTable[element] <= min){
+	        min = eligibilityTable[element];
+	        index = element;
+	        }
+	    }
+	    return index;
 	}
 
 	/**
