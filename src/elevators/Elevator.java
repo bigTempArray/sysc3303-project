@@ -158,14 +158,9 @@ public class Elevator implements Runnable {
             } else if (passengerFloor < carLocation) {
                 elevatorState = ElevatorState.traversingDown;
             } // If neither then the car will not hit a traversing state
+            
+            traverseFloor(carLocation, passengerFloor);
 
-            long tripDelay = (long) motor.traverseFloors(carLocation, passengerFloor) * 1000; // Converting to
-                                                                                              // milliseconds
-            try {
-                Thread.sleep(tripDelay);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
 
             // Reached passenger now loading inside car
             elevatorState = ElevatorState.stopped;
@@ -185,12 +180,8 @@ public class Elevator implements Runnable {
             } else if (buttonPressed < carLocation) {
                 elevatorState = ElevatorState.traversingDown;
             } // If neither then the car will not hit a traversing state
-            tripDelay = (long) motor.traverseFloors(carLocation, buttonPressed) * 1000; // Converting to milliseconds
-            try {
-                Thread.sleep(tripDelay);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            
+            traverseFloor(carLocation, buttonPressed); 
 
             // Reached Destination now unloading
             elevatorState = ElevatorState.stopped;
@@ -205,4 +196,52 @@ public class Elevator implements Runnable {
             buttons[buttonPressed - 1] = false; // Button light is now off once delivery complete
         }
     }
+    
+    /**
+     * Simulates the traversal of the elevator. Adds the 
+     * delay and announces its current floor positions 
+     * throughout the trip. 
+     * (Also for relaying its position to the scheduler)
+     * @param startingFloor the floor in which the car starts at 
+     * @param destinationFloor the floor the car needs to stop at
+     */
+    private void traverseFloor(int startingFloor, int destinationFloor) {
+    	int floorDifference = destinationFloor - startingFloor;
+    	
+    	//Calculating total trip delay
+    	 long tripDelay = (long) motor.traverseFloors(startingFloor, destinationFloor) * 1000; // Converting to milliseconds
+    	 long singleFloorDelay = tripDelay / floorDifference; //Crude representation of time each floor car will be at
+    	 
+    	 System.out.println("Traversing to floor " + destinationFloor);
+    	 System.out.println("On floor " + startingFloor);
+    	 int currentFloor = startingFloor;
+   
+    	 for (int floorsTraversed = 0; floorsTraversed < floorDifference; floorsTraversed++) {
+             try {
+                 Thread.sleep(singleFloorDelay);
+             } catch (InterruptedException e) {
+                 e.printStackTrace();
+             }
+             //Increments or decrements based on which direction the elevator is moving
+             currentFloor = (this.getState() == ElevatorState.traversingUp) ? currentFloor + 1 : currentFloor - 1; 
+             System.out.println("Reached floor " + currentFloor);
+             /**
+              * Perhaps this is where for the UDP implementation you send a datagram to the
+              * scheduler to let it know that this elevator is now on the current floor it is at. 
+              * Then if it receives a reply or anything of the sort (for stopping somewhere in the middle 
+              * of the trip) then it calls this function again (or make another function) to make the 
+              * extra stop before continuing on its way. (Maybe use the buttonsPressed[] array to 
+              * keep track of all the floors it needs to go to drop off the passengers)
+              */
+    	 }
+    	 
+    	 
+    }
+    
+    
+    
+    
+    
+    
+    
 }
