@@ -68,12 +68,14 @@ public class Scheduler implements Runnable {
 	}
 
 	// [Floor Thread]
-	public void makeFloorRequest() {
+	public void makeFloorRequest(Passenger request) {
+		
 		this.requiresPassengers = false;
 		floorRequests.add(request);
+		System.out.println("Testing size: "+floorRequests.size());
 		onDestination = false;		
 		
-		notifyAll(); // notify elevator
+//		notifyAll(); // notify elevator
 
 	}
 
@@ -196,6 +198,7 @@ public class Scheduler implements Runnable {
 				passenger = (Passenger) iStream.readObject();
 				System.out.println(passenger.toString());
 				System.out.println("\n");
+				makeFloorRequest(passenger);
 				return passenger;
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block

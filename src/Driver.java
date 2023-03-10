@@ -13,7 +13,7 @@ public class Driver {
 
 		schedulerThread.start();
 		floorSubsystem.start();
-//		elevatorThread.start();
+		elevatorThread.start();
 	}
 
 }
