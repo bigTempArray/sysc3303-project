@@ -70,19 +70,10 @@ public class Scheduler implements Runnable {
 	// [Floor Thread]
 	public void makeFloorRequest() {
 		this.requiresPassengers = false;
-//		floorRequests.add(request);
-//		onDestination = false;
-		while (true) {
-			try {
-				floorReceiver();
-			} catch (ClassNotFoundException | IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			floorReply("ACKNOWLEGMENT".getBytes());
-		}
+		floorRequests.add(request);
+		onDestination = false;		
 		
-//		notifyAll(); // notify elevator
+		notifyAll(); // notify elevator
 
 	}
 
@@ -244,7 +235,17 @@ public class Scheduler implements Runnable {
 
 	@Override
 	public void run() {
-		makeFloorRequest();
+		
+		while (true) {
+			try {
+				floorReceiver();
+			} catch (ClassNotFoundException | IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			floorReply("ACKNOWLEGMENT".getBytes());
+		}
+//		makeFloorRequest();
 //		try {
 //			floorReceiver();
 //		} catch (ClassNotFoundException | IOException e) {
