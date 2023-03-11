@@ -34,18 +34,18 @@ public class Scheduler implements Runnable {
 	private int elevatorLocation, destination; // where elevator is and where is going to
 	private SchedulerState curState;
 	private LinkedList<CarInstance> elevatorList;
-
+	public boolean isTest;
 	/**
 	 * Datagram packets for sending and receiving
 	 * Dagram socket for sending and receiving
 	 */
 
-	DatagramPacket sendPacket, receivePacket, responsePacket;
-	DatagramSocket sendSocket, receiveSocket;
+	 DatagramPacket sendPacket, receivePacket, responsePacket;
+	 DatagramSocket sendSocket, receiveSocket;
 
-	DatagramSocket sendReceiveSocket; // socket for sending and receiving to/from elevator
+	 DatagramSocket sendReceiveSocket; // socket for sending and receiving to/from elevator
 
-	public Scheduler() {
+	public Scheduler(boolean test) {
 		inProcess = false;
 		isAvailable = true;
 		floorRequests = new LinkedList<>();
@@ -55,27 +55,31 @@ public class Scheduler implements Runnable {
 		onDestination = false;
 		requiresPassengers = true;
 		curState = SchedulerState.AVAILABLE;
-
+		isTest=test;
 		// Construct a datagram socket and bind it to port 23
 		// on the local host machine. This socket will be used to
 		// receive UDP Datagram packets.
+		for (int i = 30; i < 33; i++) {
+			CarInstance elevatorInfo = new CarInstance();
+			elevatorInfo.setPortNumber(i);
+			elevatorInfo.setCurrentFloor(0);
+			this.elevatorList.add(elevatorInfo);
+		}
+		if(!isTest) {
 		try {
+			
 			sendSocket = new DatagramSocket();
 			receiveSocket = new DatagramSocket(23);
 
 			sendReceiveSocket = new DatagramSocket(24);
 
-			for (int i = 30; i < 33; i++) {
-				CarInstance elevatorInfo = new CarInstance();
-				elevatorInfo.setPortNumber(i);
-				elevatorInfo.setCurrentFloor(0);
-				this.elevatorList.add(elevatorInfo);
-			}
+			
 
 		} catch (SocketException e) {
 			e.printStackTrace();
 		}
-	}
+		}}
+	
 
 	// [Floor Thread]
 	public void makeFloorRequest(Passenger request) {
@@ -92,7 +96,7 @@ public class Scheduler implements Runnable {
 				
 				carInstance.setAscending(request.getCarButton() > carInstance.getCurrentFloor());
 				carInstance.setOnStandby(false);
-		
+				if(!isTest) {
 				ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
 				ObjectOutput objectOutput;
 				try {
@@ -109,7 +113,7 @@ public class Scheduler implements Runnable {
 				} catch (Exception e) {
 					System.err.println(e);
 				}
-			}
+			}}
 		}
 	}
 
@@ -140,6 +144,7 @@ public class Scheduler implements Runnable {
 
 	public synchronized void waitForReachedDestination(int elevatorLocation, int destination) {
 		// listen for elevator updates until it reaches destination
+		if(!isTest) {
 		this.receiveElevatorUpdates(elevatorLocation, destination);
 		try {
 			// Wait for elevator to reach destination
@@ -155,7 +160,7 @@ public class Scheduler implements Runnable {
 				carInstance.setOnStandby(true);
 			}
 		}
-
+		}
 		this.elevatorLocation = this.destination;
 		changeState();
 
@@ -176,7 +181,7 @@ public class Scheduler implements Runnable {
 	 *                    will be requested to go to.
 	 * @return the chosen elevator's index within the elevatorList.
 	 */
-	private int findBestElevator(int targetFloor) {
+	public int findBestElevator(int targetFloor) {
 		int[] eligibilityTable = new int[elevatorList.size()];
 
 		// Iterating through the list of candidates

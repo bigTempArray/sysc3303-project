@@ -14,7 +14,7 @@ import server.Scheduler;
 
 class FloorTest {
 
-	Scheduler scheduler = new Scheduler();
+	Scheduler scheduler = new Scheduler(true);
 	FloorSubsystem floor;
 
 	@BeforeEach

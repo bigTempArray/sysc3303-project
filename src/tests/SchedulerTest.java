@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Queue;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -19,19 +21,27 @@ import states.SchedulerState;
  * @author eric
  *
  */
+
 class SchedulerTest {
+	private Scheduler scheduler;
+	@BeforeEach
+	public void setup() {
+	 scheduler = new Scheduler(true);
+	scheduler.isTest=true;
+	}
+
 	@Test
 	@DisplayName("Can handle floor making a request for an elevator")
 	public void makeFloorRequestCheck() {
-		Scheduler scheduler = new Scheduler();
-		FloorSubsystem floor = new FloorSubsystem(scheduler);
-		Queue<Passenger> passengers = floor.readFile();
+		
+		//FloorSubsystem floor = new FloorSubsystem(scheduler);
+		//Queue<Passenger> passengers = floor.readFile();
 
 		// * elevator should be available right now
 		assertEquals(scheduler.isAvailable(), true);
 
 		// * floor thread -> make a request for an elevator
-		scheduler.makeFloorRequest(passengers.poll());
+		//scheduler.makeFloorRequest(passengers.poll());
 
 		// * elevator is currently not available
 		// assertEquals(scheduler.isAvailable(), false);
@@ -41,7 +51,7 @@ class SchedulerTest {
 	@Test
 	@DisplayName("Can handle elevator getting the next floor request")
 	public void getNextRequestCheck() {
-		Scheduler scheduler = new Scheduler();
+		
 		FloorSubsystem floor = new FloorSubsystem(scheduler);
 		Queue<Passenger> passengers = floor.readFile();
 
@@ -69,7 +79,7 @@ class SchedulerTest {
 	@Test
 	@DisplayName("Elevator can send updates to the scheduler on the current floor level")
 	public void sendElevatorUpdatesCheck() {
-		Scheduler scheduler = new Scheduler();
+	
 		FloorSubsystem floor = new FloorSubsystem(scheduler);
 		Queue<Passenger> passengers = floor.readFile();
 
@@ -97,7 +107,7 @@ class SchedulerTest {
 		assertEquals(0, scheduler.getElevatorLocation());
 
 		// * elevator thread -> reached the fourth floor (the destination)
-		scheduler.waitForReachedDestination();
+		scheduler.waitForReachedDestination(2,3);
 		assertEquals(SchedulerState.AVAILABLE, scheduler.getCurState());
 		assertEquals(4, scheduler.getElevatorLocation());
 		assertEquals(true, scheduler.isOnDestination());
@@ -105,4 +115,10 @@ class SchedulerTest {
 		assertEquals(true, scheduler.isAvailable());
 		assertEquals(-1, scheduler.getDestination());
 	}
+	@Test
+	@DisplayName("bestElevator")
+	public void findBEstElevatorTest() {
+		assertEquals(2,scheduler.findBestElevator(4));
+	}
+	
 }

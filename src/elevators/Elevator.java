@@ -1,8 +1,4 @@
 package elevators;
-
-import server.Scheduler;
-import states.ElevatorState;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -12,6 +8,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 
 import server.Passenger;
+import states.ElevatorState;
 
 /**
  * Elevator class which represents the
@@ -29,7 +26,7 @@ public class Elevator implements Runnable {
     private boolean buttons[]; // true means pressed, false otherwise
     private boolean doors; // true is open, false is closed
     private Engine motor;
-    private Scheduler scheduler; // elevator's communication line with the scheduler
+   // private Scheduler scheduler; // elevator's communication line with the scheduler
     private ElevatorState elevatorState; // Contains the current state of the elevator in state machine fashion
 
     private DatagramPacket sendPacket, receivePacket;
@@ -98,8 +95,8 @@ public class Elevator implements Runnable {
      * @param buttonPressed which button has been pressed within elevator
      *
      */
-    public Elevator(Scheduler scheduler, int highestFloor, int port) {
-        this.scheduler = scheduler;
+    public Elevator( int highestFloor, int port) {
+       // this.scheduler = scheduler;
         numberOfFloors = highestFloor;
         buttons = new boolean[numberOfFloors];
         doors = true;
@@ -297,5 +294,15 @@ public class Elevator implements Runnable {
         }
 
         return null;
+    }
+    public static void main(String[] args) {
+
+		Thread elevatorThread1 = new Thread(new Elevator( 20, 30));
+		Thread elevatorThread2 = new Thread(new Elevator( 20, 31));
+		Thread elevatorThread3 = new Thread(new Elevator( 20, 32));
+
+    	elevatorThread1.start();
+		elevatorThread2.start();
+		elevatorThread3.start();
     }
 }
