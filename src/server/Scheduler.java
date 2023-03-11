@@ -65,11 +65,17 @@ public class Scheduler implements Runnable {
 			receiveSocket = new DatagramSocket(23);
 			
 			sendReceiveSocket = new DatagramSocket(24);
+
+			for (int i = 30; i < 33; i++) {
+				CarInstance elevatorInfo = new CarInstance();
+				elevatorInfo.setPortNumber(i);
+				elevatorInfo.setCurrentFloor(0);
+				this.elevatorList.add(elevatorInfo);
+			}
+
 		} catch (SocketException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 	}
 
 	// [Floor Thread]
@@ -79,10 +85,15 @@ public class Scheduler implements Runnable {
 		floorRequests.add(request);
 		System.out.println("Testing size: "+floorRequests.size());
 		onDestination = false;		
-		
-//		notifyAll(); // notify elevator
 
 		int bestElevatorPort = this.findBestElevator(destination);
+		for (CarInstance carInstance: this.elevatorList) {
+			if (carInstance.getPortNumber() == bestElevatorPort) {
+				carInstance.setAscending(request.getCarButton() > carInstance.getCurrentFloor());
+				carInstance.setOnStandby(false);
+			}
+		}
+
 		ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
 		ObjectOutput objectOutput;
 		try {
@@ -127,6 +138,14 @@ public class Scheduler implements Runnable {
 			this.sendReceiveSocket.receive(receivePacket);
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+
+		// set elevator on standby 
+		// TODO: should we set ascending to false?
+		for (CarInstance carInstance: this.elevatorList) {
+			if (carInstance.getPortNumber() == this.receivePacket.getPort()) {
+				carInstance.setOnStandby(true);
+			}
 		}
 
 		this.elevatorLocation = this.destination;
