@@ -88,14 +88,14 @@ public class Scheduler implements Runnable {
 		floorRequests.add(request);
 		System.out.println("Testing size: " + floorRequests.size());
 		onDestination = false;
-
+		
 		int bestElevatorPort = this.findBestElevator(destination);
 
-		for (CarInstance carInstance : this.elevatorList) {
-			if (carInstance.getPortNumber() == bestElevatorPort) {
+		for (int i = 0;i<this.elevatorList.size();i++) {
+			if (i == bestElevatorPort) {
 				
-				carInstance.setAscending(request.getCarButton() > carInstance.getCurrentFloor());
-				carInstance.setOnStandby(false);
+				elevatorList.get(i).setAscending(request.getCarButton() > elevatorList.get(i).getCurrentFloor());
+				elevatorList.get(i).setOnStandby(false);
 				if(!isTest) {
 				ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
 				ObjectOutput objectOutput;
@@ -104,7 +104,8 @@ public class Scheduler implements Runnable {
 					objectOutput.writeObject(request);
 					byte[] sendBytes = byteStream.toByteArray();
 					objectOutput.close();
-					this.sendPacket = new DatagramPacket(sendBytes, sendBytes.length, InetAddress.getLocalHost(), bestElevatorPort);
+					this.sendPacket = new DatagramPacket(sendBytes, sendBytes.length, InetAddress.getLocalHost(), elevatorList.get(i).getPortNumber());
+					System.out.println(bestElevatorPort);
 					this.sendReceiveSocket.send(this.sendPacket);
 
 					// listen for elevator updates as it reaches the location of passenger
