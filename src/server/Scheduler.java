@@ -1,5 +1,13 @@
 package server;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -25,6 +33,16 @@ public class Scheduler implements Runnable {
 	private SchedulerState curState;
 	private LinkedList<CarInstance> elevatorList;
 	
+	
+	/**
+     * Datagram packets for sending and receiving
+     *  Dagram socket for sending and receiving
+     */
+	
+	DatagramPacket sendPacket, receivePacket, responsePacket;
+    DatagramSocket sendSocket, receiveSocket;
+    
+    DatagramSocket sendReceiveSocket;		// socket for sending and receiving to/from elevator
 
 	public Scheduler() {
 		inProcess = false;
@@ -36,15 +54,31 @@ public class Scheduler implements Runnable {
 		onDestination = false;
 		requiresPassengers = true;
 		curState = SchedulerState.AVAILABLE;
+		
+		// Construct a datagram socket and bind it to port 23
+        // on the local host machine. This socket will be used to
+        // receive UDP Datagram packets.
+        try {
+        	sendSocket = new DatagramSocket();
+			receiveSocket = new DatagramSocket(23);
+			
+			sendReceiveSocket = new DatagramSocket();
+		} catch (SocketException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 
 	// [Floor Thread]
-	public synchronized void makeFloorRequest(Passenger request) {
+	public void makeFloorRequest(Passenger request) {
+		
 		this.requiresPassengers = false;
 		floorRequests.add(request);
-		onDestination = false;
-		notifyAll(); // notify elevator
+		System.out.println("Testing size: "+floorRequests.size());
+		onDestination = false;		
+		
+//		notifyAll(); // notify elevator
 
 	}
 
@@ -189,10 +223,101 @@ public class Scheduler implements Runnable {
 	public synchronized boolean requiresPassengers() {
 		return requiresPassengers;
 	}
+	
+	/**
+	 * receiver() receives messages over the network
+	 * @throws IOException 
+	 * @throws ClassNotFoundException 
+	 */
+	public Passenger floorReceiver() throws IOException, ClassNotFoundException {
+		byte data[] = new byte[200];
+        receivePacket = new DatagramPacket(data, data.length);
+
+        // Block until a datagram packet is received from receiveSocket.
+        try {
+        	System.out.println("Scheduler: Waiting.....\n");; // so we know we're waiting
+            receiveSocket.receive(receivePacket);
+        } catch (IOException e) {
+            System.out.print("IO Exception: likely:");
+            System.out.println("Receive Socket Timed Out.\n" + e);
+            e.printStackTrace();
+            System.exit(1);
+        }
+        
+     // Process the received datagram.
+        System.out.println("Scheduler: Packet received:");
+        System.out.println("From : " + receivePacket.getAddress());
+        System.out.println("Source port: " + receivePacket.getPort());
+        int len = receivePacket.getLength();
+        System.out.println("Length: " + len);
+        System.out.print("Containing: ");
+            	
+        ObjectInputStream iStream;
+        Passenger passenger;
+		try {
+			iStream = new ObjectInputStream(new ByteArrayInputStream(data));
+			try {
+				passenger = (Passenger) iStream.readObject();
+				System.out.println(passenger.toString());
+				System.out.println("\n");
+				makeFloorRequest(passenger);
+				return passenger;
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	    	iStream.close();
+	    	
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		return null;
+	}
+	
+	public void floorReply(byte [] res) {
+		sendPacket = new DatagramPacket(res,res.length,
+                receivePacket.getAddress(), receivePacket.getPort());
+
+        System.out.println("Floor subsystem: Sending packet:");
+        System.out.println("To Client: " + sendPacket.getAddress());
+        System.out.println("Destination Client port: " + sendPacket.getPort());
+        int len = sendPacket.getLength();
+        System.out.println("Length: " + len);
+        System.out.print("Containing: ");
+        System.out.println(new String(sendPacket.getData(), 0, len));
+        System.out.println();
+        // Send the datagram packet to the client via the send socket.
+        try {
+            sendSocket.send(sendPacket);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+	}
+	
+	
 
 	@Override
 	public void run() {
-
+		
+		while (true) {
+			try {
+				floorReceiver();
+			} catch (ClassNotFoundException | IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			floorReply("ACKNOWLEGMENT".getBytes());
+		}
+//		makeFloorRequest();
+//		try {
+//			floorReceiver();
+//		} catch (ClassNotFoundException | IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		floorReply("ACKNOWLEGMENT".getBytes());
 	}
 
 }
