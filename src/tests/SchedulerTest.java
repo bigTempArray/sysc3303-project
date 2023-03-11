@@ -97,7 +97,7 @@ class SchedulerTest {
 		assertEquals(0, scheduler.getElevatorLocation());
 
 		// * elevator thread -> reached the fourth floor (the destination)
-		scheduler.reachedDestination();
+		scheduler.waitForReachedDestination();
 		assertEquals(SchedulerState.AVAILABLE, scheduler.getCurState());
 		assertEquals(4, scheduler.getElevatorLocation());
 		assertEquals(true, scheduler.isOnDestination());

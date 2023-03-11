@@ -273,6 +273,14 @@ public class Elevator implements Runnable {
               * extra stop before continuing on its way. (Maybe use the buttonsPressed[] array to 
               * keep track of all the floors it needs to go to drop off the passengers)
               */
+
+              byte[] sendBytes = new byte[] {(byte) currentFloor};
+              try {
+                  this.sendPacket = new DatagramPacket(sendBytes, sendBytes.length, InetAddress.getLocalHost(), 24);
+                  this.socket.send(this.sendPacket);
+              } catch (Exception e) {
+                e.printStackTrace();
+              }
     	 }
     	 
     	 
