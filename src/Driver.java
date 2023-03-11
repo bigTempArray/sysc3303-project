@@ -9,7 +9,7 @@ public class Driver {
 
 		Thread schedulerThread = new Thread(scheduler, "Scheduler");
 		Thread floorSubsystem = new Thread(new FloorSubsystem(scheduler), "Floor subsystem");
-		Thread elevatorThread = new Thread(new Elevator(scheduler, 20));
+		Thread elevatorThread = new Thread(new Elevator(scheduler, 20, 25));
 
 		schedulerThread.start();
 		floorSubsystem.start();

@@ -2,6 +2,15 @@ package elevators;
 
 import server.Scheduler;
 import states.ElevatorState;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
+
 import server.Passenger;
 
 /**
@@ -22,6 +31,9 @@ public class Elevator implements Runnable {
     private Engine motor;
     private Scheduler scheduler; // elevator's communication line with the scheduler
     private ElevatorState elevatorState; // Contains the current state of the elevator in state machine fashion
+
+    private DatagramPacket sendPacket, receivePacket;
+    private DatagramSocket socket;
 
     /**
      * Collection of all possible elevator states
@@ -86,7 +98,7 @@ public class Elevator implements Runnable {
      * @param buttonPressed which button has been pressed within elevator
      *
      */
-    public Elevator(Scheduler scheduler, int highestFloor) {
+    public Elevator(Scheduler scheduler, int highestFloor, int port) {
         this.scheduler = scheduler;
         numberOfFloors = highestFloor;
         buttons = new boolean[numberOfFloors];
@@ -94,6 +106,11 @@ public class Elevator implements Runnable {
         // Instantiating engine specification
         motor = new Engine(10, 1.1, 3, 2, 0.3, 4); // See engine class for parameter details
         carLocation = 1;
+        try {
+            this.socket = new DatagramSocket(port);
+        } catch (SocketException e) {
+            System.err.println(e);
+        }
         elevatorAvailable();
     }
 
@@ -143,7 +160,18 @@ public class Elevator implements Runnable {
         // scheduler.sendLamps(boolean lamps);
         while (true) {
 
-            Passenger person = scheduler.getNextRequest();
+            // Passenger person = scheduler.getNextRequest();
+            byte receiveBytes[] = new byte[200];
+            this.receivePacket = new DatagramPacket(receiveBytes, receiveBytes.length);
+            try {
+                System.out.println("Elevator: Waiting.....\n");
+                this.socket.receive(receivePacket);
+            } catch (IOException e) {
+                System.err.println(e);
+            }
+
+            System.out.println("Elevator: Packet received");
+            Passenger person = this.decodePassenger(receiveBytes);
 
             // Once the request is taken all the related information
             // of the destination is taken from the passenger class
@@ -191,7 +219,14 @@ public class Elevator implements Runnable {
             // Perhaps add delay here in future for loading/unloading times?
 
             // Got to target floor then gives update to the scheduler
-            scheduler.reachedDestination();
+            
+            // scheduler.reachedDestination();
+            try {
+                this.sendPacket = new DatagramPacket(new byte[0], 0, InetAddress.getLocalHost(), 24);
+                this.socket.send(this.sendPacket);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             elevatorState = ElevatorState.standBy;
             buttons[buttonPressed - 1] = false; // Button light is now off once delivery complete
             
@@ -243,10 +278,16 @@ public class Elevator implements Runnable {
     	 
     }
     
-    
-    
-    
-    
-    
-    
+    private Passenger decodePassenger(byte[] bytes) {
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+        ObjectInputStream objectStream;
+        try {
+            objectStream = new ObjectInputStream(inputStream);
+            return (Passenger) objectStream.readObject();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 }

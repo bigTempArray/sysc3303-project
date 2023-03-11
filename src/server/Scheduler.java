@@ -1,13 +1,15 @@
 package server;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -62,7 +64,7 @@ public class Scheduler implements Runnable {
         	sendSocket = new DatagramSocket();
 			receiveSocket = new DatagramSocket(23);
 			
-			sendReceiveSocket = new DatagramSocket();
+			sendReceiveSocket = new DatagramSocket(24);
 		} catch (SocketException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -80,6 +82,19 @@ public class Scheduler implements Runnable {
 		
 //		notifyAll(); // notify elevator
 
+		int bestElevatorPort = this.findBestElevator(destination);
+		ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+		ObjectOutput objectOutput;
+		try {
+			objectOutput = new ObjectOutputStream(byteStream);
+			objectOutput.writeObject(request);
+			byte[] sendBytes = byteStream.toByteArray();
+			objectOutput.close();
+			this.sendPacket = new DatagramPacket(sendBytes, sendBytes.length, InetAddress.getLocalHost(), bestElevatorPort);
+			this.sendReceiveSocket.send(this.sendPacket);
+		} catch (Exception e) {
+			System.err.println(e);
+		}
 	}
 
 	/**
@@ -106,6 +121,14 @@ public class Scheduler implements Runnable {
 	// keeps track where the elevator is, during the process
 
 	public synchronized void reachedDestination() {
+		try {
+			// Wait for elevator to reach destination
+			this.receivePacket = new DatagramPacket(new byte[0], 0);
+			this.sendReceiveSocket.receive(receivePacket);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 		this.elevatorLocation = this.destination;
 		changeState();
 
@@ -304,6 +327,7 @@ public class Scheduler implements Runnable {
 		while (true) {
 			try {
 				floorReceiver();
+				reachedDestination();
 			} catch (ClassNotFoundException | IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
