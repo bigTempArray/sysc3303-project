@@ -1,4 +1,4 @@
-# Tasks for iteration 2:
+# Tasks for iteration 3:
 - Mayilen:
     - Updated Tests
     - Updated UML diagram, Sequence diagram
