@@ -1,25 +1,19 @@
 # Tasks for iteration 2:
 - Mayilen:
-    - Created Elevator state diagram
+    - Updated Tests
     - Updated UML diagram, Sequence diagram
-    - Updated ElevatorTest.java for state machines
 - Ben:
-    - Updated Scheduler.java for state machines
+    - Updated Scheduler.java and floor subsystem for UDP
 - Abdul:
-    - Updated Elevator.java for state machines
-    - Created Engine.java, ElevatorTest.java, EngineTest.java
+    - Updated Scheduler for car priority logic
 - Eric:
-    - Created Scheduler state diagram
-    - Updated UML diagram, sequence diagram, integrated classes together
-    - Updated SchedulerTest.java for state machines
+    - updated Scheduler and Elevator for UDP
 
 # Files
 - diagrams
-    - iteration 2
-        - ElevatorstateDiagram.png
-        - SchedulerStateDiagram.png
-        - Sequence-Diagram.png
-        - UML-Diagram.png
+    - iteration 3
+        - Sequence.png
+        - uml.png
 
 - src
     - Driver.java
@@ -33,6 +27,7 @@
         - FloorSubsystem.java
         - Passenger.java
         - Scheduler.java
+        - CarInstance.java
 
     - states
         - ElevatorState.java
@@ -43,7 +38,8 @@
         - EngineTest.java
         - FloorTest.java
         - SchedulerTest.java
+        - carInstanceTest.java
 
 # Running the program
-Run the main method inside Driver.java to start the program
+Run the main method inside elevator and inside driver.java to start the program
 
