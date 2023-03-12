@@ -26,8 +26,8 @@ public class FloorSubsystem implements Runnable{
      * Datagram packets for sending and receiving
      *  Dagram socket for both sending and receiving
      */
-    DatagramPacket sendPacket, receivePacket;
-    DatagramSocket sendReceiveSocket;
+    private DatagramPacket sendPacket, receivePacket;
+    private  DatagramSocket sendReceiveSocket;
     
 /**
  * Default constructor that creates a Floor Subsystem and contains a Scheduler as a shared object

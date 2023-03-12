@@ -40,10 +40,10 @@ public class Scheduler implements Runnable {
 	 * Dagram socket for sending and receiving
 	 */
 
-	 DatagramPacket sendPacket, receivePacket, responsePacket;
-	 DatagramSocket sendSocket, receiveSocket;
+	private DatagramPacket sendPacket, receivePacket;
+	private DatagramSocket sendSocket, receiveSocket;
 
-	 DatagramSocket sendReceiveSocket; // socket for sending and receiving to/from elevator
+	private DatagramSocket sendReceiveSocket; // socket for sending and receiving to/from elevator
 
 	public Scheduler(boolean test) {
 		inProcess = false;
