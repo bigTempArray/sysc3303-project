@@ -1,8 +1,14 @@
 package elevators;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
 
-import server.Scheduler;
-import states.ElevatorState;
 import server.Passenger;
+import states.ElevatorState;
 
 /**
  * Elevator class which represents the
@@ -20,8 +26,11 @@ public class Elevator implements Runnable {
     private boolean buttons[]; // true means pressed, false otherwise
     private boolean doors; // true is open, false is closed
     private Engine motor;
-    private Scheduler scheduler; // elevator's communication line with the scheduler
+   // private Scheduler scheduler; // elevator's communication line with the scheduler
     private ElevatorState elevatorState; // Contains the current state of the elevator in state machine fashion
+
+    private DatagramPacket sendPacket, receivePacket;
+    private DatagramSocket socket;
 
     /**
      * Collection of all possible elevator states
@@ -86,14 +95,19 @@ public class Elevator implements Runnable {
      * @param buttonPressed which button has been pressed within elevator
      *
      */
-    public Elevator(Scheduler scheduler, int highestFloor) {
-        this.scheduler = scheduler;
+    public Elevator( int highestFloor, int port) {
+       // this.scheduler = scheduler;
         numberOfFloors = highestFloor;
         buttons = new boolean[numberOfFloors];
         doors = true;
         // Instantiating engine specification
         motor = new Engine(10, 1.1, 3, 2, 0.3, 4); // See engine class for parameter details
         carLocation = 1;
+        try {
+            this.socket = new DatagramSocket(port);
+        } catch (SocketException e) {
+            System.err.println(e);
+        }
         elevatorAvailable();
     }
 
@@ -143,7 +157,18 @@ public class Elevator implements Runnable {
         // scheduler.sendLamps(boolean lamps);
         while (true) {
 
-            Passenger person = scheduler.getNextRequest();
+            // Passenger person = scheduler.getNextRequest();
+            byte receiveBytes[] = new byte[200];
+            this.receivePacket = new DatagramPacket(receiveBytes, receiveBytes.length);
+            try {
+                System.out.println("Elevator: Waiting.....\n");
+                this.socket.receive(receivePacket);
+            } catch (IOException e) {
+                System.err.println(e);
+            }
+
+            System.out.println("Elevator: Packet received");
+            Passenger person = this.decodePassenger(receiveBytes);
 
             // Once the request is taken all the related information
             // of the destination is taken from the passenger class
@@ -158,14 +183,9 @@ public class Elevator implements Runnable {
             } else if (passengerFloor < carLocation) {
                 elevatorState = ElevatorState.traversingDown;
             } // If neither then the car will not hit a traversing state
+            
+            traverseFloor(carLocation, passengerFloor);
 
-            long tripDelay = (long) motor.traverseFloors(carLocation, passengerFloor) * 1000; // Converting to
-                                                                                              // milliseconds
-            try {
-                Thread.sleep(tripDelay);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
 
             // Reached passenger now loading inside car
             elevatorState = ElevatorState.stopped;
@@ -185,12 +205,8 @@ public class Elevator implements Runnable {
             } else if (buttonPressed < carLocation) {
                 elevatorState = ElevatorState.traversingDown;
             } // If neither then the car will not hit a traversing state
-            tripDelay = (long) motor.traverseFloors(carLocation, buttonPressed) * 1000; // Converting to milliseconds
-            try {
-                Thread.sleep(tripDelay);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            
+            traverseFloor(carLocation, buttonPressed); 
 
             // Reached Destination now unloading
             elevatorState = ElevatorState.stopped;
@@ -200,9 +216,93 @@ public class Elevator implements Runnable {
             // Perhaps add delay here in future for loading/unloading times?
 
             // Got to target floor then gives update to the scheduler
-            scheduler.reachedDestination();
+            
+            // scheduler.reachedDestination();
+            try {
+                this.sendPacket = new DatagramPacket(new byte[0], 0, InetAddress.getLocalHost(), 24);
+                this.socket.send(this.sendPacket);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             elevatorState = ElevatorState.standBy;
             buttons[buttonPressed - 1] = false; // Button light is now off once delivery complete
+            
+            //Perhaps once in standby from the scheduler's requests elevator should check 
+            //that there are no more buttons[] pressed by checking if any buttons are still
+            //pressed, and if they are it calls a function to traverse to that floor in which
+            //it drops off the remaining passengers...
         }
+    }
+    
+    /**
+     * Simulates the traversal of the elevator. Adds the 
+     * delay and announces its current floor positions 
+     * throughout the trip. 
+     * (Also for relaying its position to the scheduler)
+     * @param startingFloor the floor in which the car starts at 
+     * @param destinationFloor the floor the car needs to stop at
+     */
+    private void traverseFloor(int startingFloor, int destinationFloor) {
+    	int floorDifference = destinationFloor - startingFloor;
+    	
+    	//Calculating total trip delay
+    	 long tripDelay = (long) motor.traverseFloors(startingFloor, destinationFloor) * 1000; // Converting to milliseconds
+    	 long singleFloorDelay = tripDelay / floorDifference; //Crude representation of time each floor car will be at
+    	 
+    	 System.out.println("Traversing to floor " + destinationFloor);
+    	 System.out.println("On floor " + startingFloor);
+    	 int currentFloor = startingFloor;
+   
+    	 for (int floorsTraversed = 0; floorsTraversed < floorDifference; floorsTraversed++) {
+             try {
+                 Thread.sleep(singleFloorDelay);
+             } catch (InterruptedException e) {
+                 e.printStackTrace();
+             }
+             //Increments or decrements based on which direction the elevator is moving
+             currentFloor = (this.getState() == ElevatorState.traversingUp) ? currentFloor + 1 : currentFloor - 1; 
+             System.out.println("Reached floor " + currentFloor);
+             /**
+              * Perhaps this is where for the UDP implementation you send a datagram to the
+              * scheduler to let it know that this elevator is now on the current floor it is at. 
+              * Then if it receives a reply or anything of the sort (for stopping somewhere in the middle 
+              * of the trip) then it calls this function again (or make another function) to make the 
+              * extra stop before continuing on its way. (Maybe use the buttonsPressed[] array to 
+              * keep track of all the floors it needs to go to drop off the passengers)
+              */
+
+              byte[] sendBytes = new byte[] {(byte) currentFloor};
+              try {
+                  this.sendPacket = new DatagramPacket(sendBytes, sendBytes.length, InetAddress.getLocalHost(), 24);
+                  this.socket.send(this.sendPacket);
+              } catch (Exception e) {
+                e.printStackTrace();
+              }
+    	 }
+    	 
+    	 
+    }
+    
+    private Passenger decodePassenger(byte[] bytes) {
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+        ObjectInputStream objectStream;
+        try {
+            objectStream = new ObjectInputStream(inputStream);
+            return (Passenger) objectStream.readObject();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+    public static void main(String[] args) {
+
+		Thread elevatorThread1 = new Thread(new Elevator( 20, 30));
+		Thread elevatorThread2 = new Thread(new Elevator( 20, 31));
+		Thread elevatorThread3 = new Thread(new Elevator( 20, 32));
+
+    	elevatorThread1.start();
+		elevatorThread2.start();
+		elevatorThread3.start();
     }
 }

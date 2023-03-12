@@ -19,7 +19,7 @@ import states.ElevatorState;
  */
 class ElevatorTest {
 
-    Scheduler scheduler = new Scheduler();
+    Scheduler scheduler = new Scheduler(true);
     Elevator defaultLift;
 
     @BeforeEach
@@ -30,7 +30,7 @@ class ElevatorTest {
          * used to reduce the amount of code needed from repeating lines of
          * instantiation.
          */
-        defaultLift = new Elevator(scheduler, 10);
+        defaultLift = new Elevator( 10, 25);
     }
 
     @Test

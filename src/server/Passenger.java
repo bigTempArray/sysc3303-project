@@ -1,8 +1,11 @@
 package server;
 
-public class Passenger {
+import java.io.Serializable;
 
-    private String time;
+public class Passenger implements Serializable{
+
+    private static final long serialVersionUID = 1L;
+	private String time;
     private int floor;
     private String floorButton;
     private int CarButton;

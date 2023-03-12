@@ -1,7 +1,18 @@
 package server;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Scanner;
@@ -10,12 +21,28 @@ import java.util.Scanner;
  * */
 public class FloorSubsystem implements Runnable{
     private final Scheduler scheduler;
+    
+    /**
+     * Datagram packets for sending and receiving
+     *  Dagram socket for both sending and receiving
+     */
+    private DatagramPacket sendPacket, receivePacket;
+    private  DatagramSocket sendReceiveSocket;
+    
 /**
  * Default constructor that creates a Floor Subsystem and contains a Scheduler as a shared object
  * @param scheduler is a shared object used between elevator and floor
 * */
     public FloorSubsystem(Scheduler scheduler){
         this.scheduler=scheduler;
+        
+        try {
+            // send and receive UDP Datagram packets.
+            sendReceiveSocket = new DatagramSocket();
+        } catch (SocketException se) {   // Can't create the socket.
+            se.printStackTrace();
+            System.exit(1);
+        }
 
     }
 /**
@@ -32,7 +59,22 @@ public class FloorSubsystem implements Runnable{
             if(scheduler.isAvailable()) {
             	if(!passengers.isEmpty()) {
 	                System.out.println("Passenger queued");
-	                scheduler.makeFloorRequest(passengers.remove());
+//	                scheduler.makeFloorRequest(passengers.remove());
+	             // Serialize to a byte array
+	            	ByteArrayOutputStream bStream = new ByteArrayOutputStream();
+	            	ObjectOutput oo;
+					try {
+						oo = new ObjectOutputStream(bStream);
+						oo.writeObject(passengers.remove());
+						byte[] serializedMessage = bStream.toByteArray();
+						oo.close();
+						sender(serializedMessage);
+						receiver();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}             	
+	            	
             	}
             }
             
@@ -76,5 +118,90 @@ public class FloorSubsystem implements Runnable{
 
         return passengerList;
     }
+    
+    
+    
+    /**
+     * Sender() helps to send provided message to the specified port
+     * @param buffer is message to be sent in form of bytes
+     */
+    
+    public void sender(byte[] buffer){
 
+        try {
+            sendPacket = new DatagramPacket(buffer, buffer.length,
+                    InetAddress.getLocalHost(), 23);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        System.out.println("FLoor subsystem: Sending packet:");
+        System.out.println("To : " + sendPacket.getAddress());
+        System.out.println("Destination  port: " + sendPacket.getPort());
+        int len = sendPacket.getLength();
+        System.out.println("Length: " + len);
+        System.out.print("Containing: ");
+        
+        ObjectInputStream iStream;
+		try {
+			iStream = new ObjectInputStream(new ByteArrayInputStream(buffer));
+			Passenger passenger;
+			try {
+				passenger = (Passenger) iStream.readObject();
+				System.out.println(passenger.toString());
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	    	iStream.close();
+	    	
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+        // Send the datagram packet to the server via the send/receive socket.
+
+        try {
+            sendReceiveSocket.send(sendPacket);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        System.out.println("Floor Subsystem: Packet sent.\n");
+
+    }
+    
+    /**
+     * receiver() is used to receive message over the network
+     */
+
+    public void receiver(){
+
+        byte data[] = new byte[100];
+        receivePacket = new DatagramPacket(data, data.length);
+
+        try {
+            // Block until a datagram is received via sendReceiveSocket.
+            sendReceiveSocket.receive(receivePacket);
+        } catch(IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        // Process the received datagram.
+        System.out.println("FLoor subsystem: Packet received:");
+        System.out.println("From : " + receivePacket.getAddress());
+        System.out.println("SOurce port: " + receivePacket.getPort());
+        int len = receivePacket.getLength();
+        System.out.println("Length: " + len);
+        System.out.print("Containing: ");
+        System.out.println(new String(receivePacket.getData(), 0, len));
+        System.out.println("\n --------------------------- \n");
+
+    }
+    
+    
 }
