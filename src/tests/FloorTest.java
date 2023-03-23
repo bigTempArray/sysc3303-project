@@ -20,7 +20,7 @@ class FloorTest {
 	@BeforeEach
 	@DisplayName("Setting prerequisites")
 	public void defaultSetup() {
-		this.floor = new FloorSubsystem(scheduler);
+		this.floor = new FloorSubsystem();
 	}
 
 	@Test

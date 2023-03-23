@@ -20,8 +20,6 @@ import java.util.Scanner;
  * Class for floor Subsystem
  * */
 public class FloorSubsystem implements Runnable{
-    private final Scheduler scheduler;
-    
     /**
      * Datagram packets for sending and receiving
      *  Dagram socket for both sending and receiving
@@ -31,10 +29,8 @@ public class FloorSubsystem implements Runnable{
     
 /**
  * Default constructor that creates a Floor Subsystem and contains a Scheduler as a shared object
- * @param scheduler is a shared object used between elevator and floor
 * */
-    public FloorSubsystem(Scheduler scheduler){
-        this.scheduler=scheduler;
+    public FloorSubsystem(){
         
         try {
             // send and receive UDP Datagram packets.
@@ -73,11 +69,6 @@ public class FloorSubsystem implements Runnable{
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }             	
-            }
-            
-            // if passenger queue empty and scheduler requires passenger then exit
-            if(passengers.isEmpty() && scheduler.requiresPassengers()){
-                System.exit(0);
             }
         }
     }
@@ -200,5 +191,8 @@ public class FloorSubsystem implements Runnable{
 
     }
     
-    
+    public static void main(String[] args) {
+        Thread floorSubsystem = new Thread(new FloorSubsystem());
+        floorSubsystem.start();
+    }    
 }

@@ -52,7 +52,7 @@ class SchedulerTest {
 	@DisplayName("Can handle elevator getting the next floor request")
 	public void getNextRequestCheck() {
 		
-		FloorSubsystem floor = new FloorSubsystem(scheduler);
+		FloorSubsystem floor = new FloorSubsystem();
 		Queue<Passenger> passengers = floor.readFile();
 
 		// floor thread -> make a request for an elevator
@@ -80,7 +80,7 @@ class SchedulerTest {
 	@DisplayName("Elevator can send updates to the scheduler on the current floor level")
 	public void sendElevatorUpdatesCheck() {
 	
-		FloorSubsystem floor = new FloorSubsystem(scheduler);
+		FloorSubsystem floor = new FloorSubsystem();
 		Queue<Passenger> passengers = floor.readFile();
 
 		// floor thread -> make a request for an elevator

@@ -402,4 +402,9 @@ public class Scheduler implements Runnable {
 		// floorReply("ACKNOWLEGMENT".getBytes());
 	}
 
+	public static void main(String[] args) {
+		Scheduler scheduler = new Scheduler(false);
+		Thread schedulerThread = new Thread(scheduler, "Scheduler");
+		schedulerThread.start();
+	}
 }
