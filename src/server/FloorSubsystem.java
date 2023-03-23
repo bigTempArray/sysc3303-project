@@ -56,26 +56,23 @@ public class FloorSubsystem implements Runnable{
         Queue<Passenger> passengers=new LinkedList<>();
         passengers=readFile();
         while(true){
-            if(scheduler.isAvailable()) {
-            	if(!passengers.isEmpty()) {
-	                System.out.println("Passenger queued");
+            if(!passengers.isEmpty()) {
+                System.out.println("Passenger queued");
 //	                scheduler.makeFloorRequest(passengers.remove());
-	             // Serialize to a byte array
-	            	ByteArrayOutputStream bStream = new ByteArrayOutputStream();
-	            	ObjectOutput oo;
-					try {
-						oo = new ObjectOutputStream(bStream);
-						oo.writeObject(passengers.remove());
-						byte[] serializedMessage = bStream.toByteArray();
-						oo.close();
-						sender(serializedMessage);
-						receiver();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}             	
-	            	
-            	}
+                // Serialize to a byte array
+                ByteArrayOutputStream bStream = new ByteArrayOutputStream();
+                ObjectOutput oo;
+                try {
+                    oo = new ObjectOutputStream(bStream);
+                    oo.writeObject(passengers.remove());
+                    byte[] serializedMessage = bStream.toByteArray();
+                    oo.close();
+                    sender(serializedMessage);
+                    receiver();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }             	
             }
             
             // if passenger queue empty and scheduler requires passenger then exit
