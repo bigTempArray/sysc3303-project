@@ -1,10 +1,11 @@
 package scheduler;
 
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 
-import shared.Passenger;
-import shared.states.SchedulerState;
+import shared.FloorRequest;
 
 /**
  * 
@@ -13,15 +14,16 @@ import shared.states.SchedulerState;
 public class Scheduler {
 	public boolean inProcess, isAvailable, onDestination, requiresPassengers; 
 	
-	private Queue<Passenger> floorRequests; // requests from floor system
-	private LinkedList<CarInstance> elevatorList;
+	public List<FloorRequest> floorRequests; // requests from floor system
+	public List<CarInstance> elevatorList;
 	public boolean isTest;
 
 	public Scheduler(boolean test) {
 		inProcess = false;
 		isAvailable = true;
-		floorRequests = new LinkedList<>();
-		elevatorList = new LinkedList<CarInstance>();
+		// floorRequests = new LinkedList<>();
+		floorRequests = Collections.synchronizedList(new LinkedList<>());
+		elevatorList = Collections.synchronizedList(new LinkedList<>());
 		onDestination = false;
 		requiresPassengers = true;
 		isTest=test; // TODO: Will be used for testing later
@@ -99,9 +101,11 @@ public class Scheduler {
 	public static void main(String[] args) throws Exception{
 		Scheduler scheduler = new Scheduler(false);
 		Thread floorControlThread = new Thread(new FloorControl(scheduler), "FloorControl");
-		Thread elevatorControlThread = new Thread(new ElevatorControl(scheduler), "ElevatorControl");
+		Thread elevatorControlThread1 = new Thread(new ElevatorControl(scheduler, 30), "ElevatorControl1");
+		Thread elevatorControlThread2 = new Thread(new ElevatorControl(scheduler, 31), "ElevatorControl2");
+		Thread elevatorControlThread3 = new Thread(new ElevatorControl(scheduler, 32), "ElevatorControl3");
 
 		floorControlThread.start();
-		elevatorControlThread.start();
+		// elevatorControlThread.start();
 	}
 }

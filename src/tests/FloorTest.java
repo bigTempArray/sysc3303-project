@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import floor.FloorSubsystem;
 import scheduler.Scheduler;
-import shared.Passenger;
+import shared.FloorRequest;
 
 
 class FloorTest {
@@ -27,7 +27,7 @@ class FloorTest {
 	@Test
 	@DisplayName("Can properly read input file")
 	public void readInputFileCheck() {
-		Queue<Passenger> passengerQueue = this.floor.readFile();
+		Queue<FloorRequest> passengerQueue = this.floor.readFile();
 
 		// assert there are 3 passengers in the queue
 		assertEquals(3, passengerQueue.size()); 

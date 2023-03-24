@@ -6,7 +6,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
-import shared.Passenger;
+import shared.FloorRequest;
 
 public class FloorControl implements Runnable {
     private Scheduler scheduler;
@@ -19,17 +19,17 @@ public class FloorControl implements Runnable {
         this.socket = new DatagramSocket(24);
     }
 
-    public Passenger receiveFloorRequest() {
+    public FloorRequest receiveFloorRequest() {
         try {
             byte data[] = new byte[200];
             this.receivePacket = new DatagramPacket(data, data.length);
             this.socket.receive(this.receivePacket);
 
             ObjectInputStream iStream;
-            Passenger passenger;
+            FloorRequest passenger;
             iStream = new ObjectInputStream(new ByteArrayInputStream(data));
             
-            passenger = (Passenger) iStream.readObject();
+            passenger = (FloorRequest) iStream.readObject();
             iStream.close();
 
             System.out.println("---------------------");
@@ -51,10 +51,9 @@ public class FloorControl implements Runnable {
     @Override
     public void run() {
         while (true) {
-            Passenger passenger = this.receiveFloorRequest();
+            FloorRequest floorRequest = this.receiveFloorRequest();
             System.out.println("Received a passenger");
-
-            
+            this.scheduler.floorRequests.add(floorRequest);
         }
     }
 }

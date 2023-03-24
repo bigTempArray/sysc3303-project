@@ -16,7 +16,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Scanner;
 
-import shared.Passenger;
+import shared.FloorRequest;
 /**
  * Class for floor Subsystem
  * */
@@ -49,10 +49,10 @@ public class FloorSubsystem {
  *
  * */
     public void start() throws Exception {
-        Queue<Passenger> passengers= readFile();
+        Queue<FloorRequest> passengers= readFile();
         while(true){
             if(!passengers.isEmpty()) {
-                Passenger passenger = passengers.remove();
+                FloorRequest passenger = passengers.remove();
                 Thread.sleep(passenger.getTime() * 1000);
                 System.out.println("---------------------");
                 System.out.println("Passenger queued");
@@ -73,12 +73,12 @@ public class FloorSubsystem {
      * @return Queue<Passenger> object that contains a list of passengers
      *
      * */
-    public Queue<Passenger> readFile() {
+    public Queue<FloorRequest> readFile() {
         int time;
         int floor;
         int carButton;
         String[] lines;
-        Queue<Passenger> passengerList = new LinkedList<>();
+        Queue<FloorRequest> passengerList = new LinkedList<>();
         try {
             Scanner floorFile = new Scanner(new File("src/input.txt"));
 
@@ -89,7 +89,7 @@ public class FloorSubsystem {
                 time = Integer.parseInt(lines[0]);
                 floor = Integer.parseInt(lines[1]);
                 carButton = Integer.parseInt(lines[2]);
-                passengerList.add(new Passenger(time, floor, carButton));
+                passengerList.add(new FloorRequest(time, floor, carButton));
 
             }
             floorFile.close();
