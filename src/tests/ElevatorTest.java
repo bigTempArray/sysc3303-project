@@ -10,8 +10,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import elevators.Elevator;
-import server.Scheduler;
-import states.ElevatorState;
+import scheduler.Scheduler;
+import shared.states.ElevatorState;
 
 /**
  * @author abdul

@@ -7,8 +7,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 
-import server.Passenger;
-import states.ElevatorState;
+import shared.Passenger;
+import shared.states.ElevatorState;
 
 /**
  * Elevator class which represents the
@@ -297,9 +297,9 @@ public class Elevator implements Runnable {
     }
     public static void main(String[] args) {
 
-		Thread elevatorThread1 = new Thread(new Elevator( 20, 30));
-		Thread elevatorThread2 = new Thread(new Elevator( 20, 31));
-		Thread elevatorThread3 = new Thread(new Elevator( 20, 32));
+		Thread elevatorThread1 = new Thread(new Elevator(20, 30));
+		Thread elevatorThread2 = new Thread(new Elevator(20, 31));
+		Thread elevatorThread3 = new Thread(new Elevator(20, 32));
 
     	elevatorThread1.start();
 		elevatorThread2.start();

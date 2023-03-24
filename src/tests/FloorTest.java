@@ -8,9 +8,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import server.FloorSubsystem;
-import server.Passenger;
-import server.Scheduler;
+import floor.FloorSubsystem;
+import scheduler.Scheduler;
+import shared.Passenger;
+
 
 class FloorTest {
 

@@ -1,13 +1,12 @@
-package server;
+package shared;
 
 import java.io.Serializable;
 
 public class Passenger implements Serializable{
 
     private static final long serialVersionUID = 1L;
-	private String time;
+	private int time;
     private int floor;
-    private String floorButton;
     private int CarButton;
 /***
  * Default constructor to create a passenger
@@ -17,36 +16,23 @@ public class Passenger implements Serializable{
  * @param CarButton int for the destination floor
  */
 
-    public Passenger(String time, int floor, String floorButton, int CarButton){
+    public Passenger(int time, int floor, int CarButton){
         this.setTime(time);
         this.setFloor(floor);
-        this.setFloorButton(floorButton);
         this.setCarButton(CarButton);
 
     }
     /**
      * @return the time
      */
-    public String getTime() {
+    public int getTime() {
         return time;
     }
     /**
      * @param time the time to set
      */
-    public void setTime(String time) {
+    public void setTime(int time) {
         this.time = time;
-    }
-    /**
-     * @return the floorButton
-     */
-    public String getFloorButton() {
-        return floorButton;
-    }
-    /**
-     * @param floorButton the floorButton to set
-     */
-    public void setFloorButton(String floorButton) {
-        this.floorButton = floorButton;
     }
     /**
      * @return the floor
@@ -74,12 +60,11 @@ public class Passenger implements Serializable{
     }
     public String toString() {
         return
-            "Time: " + this.time +
-            "\nFloor: " + this.floor +
-            "\nFloor button: " + this.floorButton + 
-            "\nCar button: " + this.CarButton +
-            "\n-------------";
-
+            "{" + "\n" +
+            "   Time: " + this.time + ",\n" +
+            "   Floor: " + this.floor + ",\n" +
+            "   Car button: " + this.CarButton + "\n" + 
+            "}";
     }
 
 }

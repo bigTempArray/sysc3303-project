@@ -1,4 +1,4 @@
-package server;
+package scheduler;
 
 public class CarInstance {
 	private int currentFloor;
