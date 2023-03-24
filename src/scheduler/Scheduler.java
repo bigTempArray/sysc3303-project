@@ -1,5 +1,6 @@
 package scheduler;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -12,33 +13,37 @@ import shared.FloorRequest;
  * @author ben, Abdul
  */
 public class Scheduler {
-	public boolean inProcess, isAvailable, onDestination, requiresPassengers; 
-	
-	public List<FloorRequest> floorRequests; // requests from floor system
-	public List<CarInstance> elevatorList;
+	public Queue<FloorRequest> floorRequests; // requests from floor system
+	public List<ElevatorInfo> elevatorList;
+	private List<ElevatorController> elevatorControllers;
 	public boolean isTest;
 
 	public Scheduler(boolean test) {
-		inProcess = false;
-		isAvailable = true;
-		// floorRequests = new LinkedList<>();
-		floorRequests = Collections.synchronizedList(new LinkedList<>());
-		elevatorList = Collections.synchronizedList(new LinkedList<>());
-		onDestination = false;
-		requiresPassengers = true;
-		isTest=test; // TODO: Will be used for testing later
-		
-		// Construct a datagram socket and bind it to port 23
-		// on the local host machine. This socket will be used to
-		// receive UDP Datagram packets.
-		for (int i = 30; i < 33; i++) {
-			CarInstance elevatorInfo = new CarInstance();
+		this.floorRequests = new LinkedList<>();
+		this.elevatorList = Collections.synchronizedList(new LinkedList<>());
+		this.elevatorControllers = new ArrayList<>();
+		this.isTest = test;
+
+		// the elevator ports
+		for (int i = 30; i < 31; i++) {
+			// create the elevator info object
+			ElevatorInfo elevatorInfo = new ElevatorInfo();
 			elevatorInfo.setPortNumber(i);
 			elevatorInfo.setCurrentFloor(0);
 			this.elevatorList.add(elevatorInfo);
+
+			// create a thread to control the elevator
+			ElevatorController elevatorControl = new ElevatorController(this, i);
+			this.elevatorControllers.add(elevatorControl);
+			Thread elevatorControlThread = new Thread(elevatorControl, "ElevatorControl" + i);
+			elevatorControlThread.start();
 		}
+
+		// create the floor control thread
+		Thread floorControlThread = new Thread(new FloorController(this), "FloorControl");
+		floorControlThread.start();
 	}
-	
+
 	/**
 	 * Method that checks elevatorList for all potential
 	 * elevators to send a request to and returns the most
@@ -49,7 +54,7 @@ public class Scheduler {
 	 *                    will be requested to go to.
 	 * @return the chosen elevator's index within the elevatorList.
 	 */
-	public int findBestElevator(int targetFloor) {
+	private int findBestElevator(int targetFloor) {
 		int[] eligibilityTable = new int[elevatorList.size()];
 
 		// Iterating through the list of candidates
@@ -98,14 +103,38 @@ public class Scheduler {
 		return index;
 	}
 
-	public static void main(String[] args) throws Exception{
-		Scheduler scheduler = new Scheduler(false);
-		Thread floorControlThread = new Thread(new FloorControl(scheduler), "FloorControl");
-		Thread elevatorControlThread1 = new Thread(new ElevatorControl(scheduler, 30), "ElevatorControl1");
-		Thread elevatorControlThread2 = new Thread(new ElevatorControl(scheduler, 31), "ElevatorControl2");
-		Thread elevatorControlThread3 = new Thread(new ElevatorControl(scheduler, 32), "ElevatorControl3");
+	private ElevatorController getElevatorController(int elevatorPort) {
+		for (ElevatorController controller: this.elevatorControllers) {
+			if (controller.elevatorPort == elevatorPort) {
+				return controller;
+			}
+		}
 
-		floorControlThread.start();
-		// elevatorControlThread.start();
+		return null;
+	}
+
+	private void start() throws Exception {
+		while (true) {
+			boolean hasFloorRequests = !this.floorRequests.isEmpty();
+			if (hasFloorRequests) {
+				FloorRequest floorRequest = this.floorRequests.poll();
+				System.out.println("[Scheduler]: found a new floor request at floor: " + floorRequest.getFloor());
+
+				int bestElevatorIndex = this.findBestElevator(floorRequest.getFloor());
+				int elevatorPort = this.elevatorList.get(bestElevatorIndex).getPortNumber();
+				ElevatorController controller = this.getElevatorController(elevatorPort);
+				if (controller != null) {
+					controller.todoList.add(floorRequest);
+					System.out.println("[Scheduler]: added new request in elevator controller");
+				}
+			}
+			
+			Thread.sleep(1000);
+		}
+	}
+
+	public static void main(String[] args) throws Exception {
+		Scheduler scheduler = new Scheduler(false);
+		scheduler.start();
 	}
 }

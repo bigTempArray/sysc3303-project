@@ -26,22 +26,20 @@ public class FloorSubsystem {
      *  Dagram socket for both sending and receiving
      */
     private DatagramPacket sendPacket, receivePacket;
-    private  DatagramSocket sendReceiveSocket;
+    private  DatagramSocket socket;
     
 /**
  * Default constructor that creates a Floor Subsystem and contains a Scheduler as a shared object
 * */
     public FloorSubsystem(){
-        
         try {
             // send and receive UDP Datagram packets.
-            sendReceiveSocket = new DatagramSocket();
-            sendReceiveSocket.setSoTimeout(1000);
-        } catch (SocketException se) {   // Can't create the socket.
+            socket = new DatagramSocket();
+            socket.setSoTimeout(1000);
+        } catch (SocketException se) {
             se.printStackTrace();
             System.exit(1);
         }
-
     }
 /**
  * it will read the input from a file and if the elevator is avalaibkle it will send the first passenger over to the scheduler for the elevator
@@ -49,22 +47,20 @@ public class FloorSubsystem {
  *
  * */
     public void start() throws Exception {
-        Queue<FloorRequest> passengers= readFile();
+        Queue<FloorRequest> floorRequests= readFile();
         while(true){
-            if(!passengers.isEmpty()) {
-                FloorRequest passenger = passengers.remove();
-                Thread.sleep(passenger.getTime() * 1000);
+            if(!floorRequests.isEmpty()) {
+                FloorRequest floorRequest = floorRequests.remove();
+                Thread.sleep(floorRequest.getTime() * 1000);
                 System.out.println("---------------------");
-                System.out.println("Passenger queued");
+                System.out.println("FloorRequest queued");
 
-                ByteArrayOutputStream bStream = new ByteArrayOutputStream();
-                ObjectOutput oo;
-                
-                oo = new ObjectOutputStream(bStream);
-                oo.writeObject(passenger);
-                byte[] serializedMessage = bStream.toByteArray();
-                oo.close();
-                send(serializedMessage);
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                ObjectOutput objectOutput = new ObjectOutputStream(outputStream);
+                objectOutput.writeObject(floorRequest);
+                objectOutput.close();
+                byte[] sendBytes = outputStream.toByteArray();
+                send(sendBytes);
             }
         }
     }
@@ -76,7 +72,7 @@ public class FloorSubsystem {
     public Queue<FloorRequest> readFile() {
         int time;
         int floor;
-        int carButton;
+        int destination;
         String[] lines;
         Queue<FloorRequest> passengerList = new LinkedList<>();
         try {
@@ -88,8 +84,8 @@ public class FloorSubsystem {
 
                 time = Integer.parseInt(lines[0]);
                 floor = Integer.parseInt(lines[1]);
-                carButton = Integer.parseInt(lines[2]);
-                passengerList.add(new FloorRequest(time, floor, carButton));
+                destination = Integer.parseInt(lines[2]);
+                passengerList.add(new FloorRequest(time, floor, destination));
 
             }
             floorFile.close();
@@ -109,31 +105,24 @@ public class FloorSubsystem {
      */
     
     public void send(byte[] buffer) throws Exception {
-        try {
-            sendPacket = new DatagramPacket(buffer, buffer.length, InetAddress.getLocalHost(), 24);
-            ObjectInputStream iStream = new ObjectInputStream(new ByteArrayInputStream(buffer));
-            // Passenger passenger = (Passenger) iStream.readObject();
-            iStream.close();
-            this.receivePacket = new DatagramPacket(new byte[0], 0);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        this.sendPacket = new DatagramPacket(buffer, buffer.length, InetAddress.getLocalHost(), 24);
+        this.receivePacket = new DatagramPacket(new byte[0], 0);
 		
-        sendReceiveSocket.send(sendPacket);
-        System.out.println("sending Passenger info to the floor control");
+        this.socket.send(sendPacket);
+        System.out.println("[Floor sub]: sending Passenger info to the floor control");
 
         while (true) {
             try {
-                System.out.println("waiting for acknowledgement");
-                this.sendReceiveSocket.receive(this.receivePacket);
+                System.out.println("[Floor sub]: waiting for acknowledgement");
+                this.socket.receive(this.receivePacket);
                 break;
             } catch (SocketTimeoutException e) {
-                this.sendReceiveSocket.send(this.sendPacket);
-                System.out.println("sending a passenger to the floor control");
+                this.socket.send(this.sendPacket);
+                System.out.println("[Floor sub]: sending a passenger to the floor control");
             }
         }
 
-        System.out.println("received acknowledgement");
+        System.out.println("[Floor sub]: received acknowledgement");
     }
     
     

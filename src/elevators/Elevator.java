@@ -33,6 +33,8 @@ public class Elevator implements Runnable {
 
     private DatagramPacket sendPacket, receivePacket;
     private DatagramSocket socket;
+    private int port;
+    private int controllerPort;
 
     /**
      * Collection of all possible elevator states
@@ -99,12 +101,15 @@ public class Elevator implements Runnable {
      */
     public Elevator(int highestFloor, int port) {
         // this.scheduler = scheduler;
-        numberOfFloors = highestFloor;
-        buttons = new boolean[numberOfFloors];
-        doors = true;
+        this.numberOfFloors = highestFloor;
+        this.buttons = new boolean[numberOfFloors];
+        this.doors = true;
         // Instantiating engine specification
-        motor = new Engine(10, 1.1, 3, 2, 0.3, 4); // See engine class for parameter details
-        carLocation = 1;
+        this.motor = new Engine(10, 1.1, 3, 2, 0.3, 4); // See engine class for parameter details
+        this.carLocation = 1;
+        this.port = port;
+        this.controllerPort = port + 10;
+
         try {
             this.socket = new DatagramSocket(port);
         } catch (SocketException e) {
@@ -154,85 +159,101 @@ public class Elevator implements Runnable {
      * the 'go-ahead' on which floor to go to first, then the elevator will
      * then execute methods to reach given floor. (Future iteration)
      */
+    // public void run() {
+    //     // Call will depend on scheduler's class. Needs to be filled out.
+    //     // scheduler.sendLamps(boolean lamps);
+    //     while (true) {
+
+    //         // Passenger person = scheduler.getNextRequest();
+    //         byte receiveBytes[] = new byte[200];
+    //         this.receivePacket = new DatagramPacket(receiveBytes, receiveBytes.length);
+    //         try {
+    //             System.out.println("Elevator: Waiting.....\n");
+    //             this.socket.receive(receivePacket);
+    //         } catch (IOException e) {
+    //             System.err.println(e);
+    //         }
+
+    //         System.out.println("Elevator: Packet received");
+    //         FloorRequest person = this.decodePassenger(receiveBytes);
+
+    //         // Once the request is taken all the related information
+    //         // of the destination is taken from the passenger class
+
+    //         // Going to passenger
+    //         doors = false;
+    //         elevatorState = ElevatorState.stopped;
+    //         int passengerFloor = person.getFloor();
+
+    //         if (passengerFloor > carLocation) {
+    //             elevatorState = ElevatorState.traversingUp;
+    //         } else if (passengerFloor < carLocation) {
+    //             elevatorState = ElevatorState.traversingDown;
+    //         } // If neither then the car will not hit a traversing state
+
+    //         traverseFloor(carLocation, passengerFloor);
+
+    //         // Reached passenger now loading inside car
+    //         elevatorState = ElevatorState.stopped;
+    //         carLocation = passengerFloor;
+    //         doors = true;
+    //         elevatorState = ElevatorState.loading;
+    //         doors = false;
+    //         // Passenger choosing their destination
+    //         int buttonPressed = person.getDestination();
+
+    //         // Simulating button press on class creation
+    //         buttons[buttonPressed - 1] = true;
+
+    //         // Taking passenger to destination
+    //         if (buttonPressed > carLocation) {
+    //             elevatorState = ElevatorState.traversingUp;
+    //         } else if (buttonPressed < carLocation) {
+    //             elevatorState = ElevatorState.traversingDown;
+    //         } // If neither then the car will not hit a traversing state
+
+    //         traverseFloor(carLocation, buttonPressed);
+
+    //         // Reached Destination now unloading
+    //         elevatorState = ElevatorState.stopped;
+    //         carLocation = buttonPressed;
+    //         doors = true;
+    //         elevatorState = ElevatorState.unLoading;
+    //         // Perhaps add delay here in future for loading/unloading times?
+
+    //         // Got to target floor then gives update to the scheduler
+
+    //         // scheduler.reachedDestination();
+    //         try {
+    //             this.sendPacket = new DatagramPacket(new byte[0], 0, InetAddress.getLocalHost(), 24);
+    //             this.socket.send(this.sendPacket);
+    //         } catch (Exception e) {
+    //             e.printStackTrace();
+    //         }
+    //         elevatorState = ElevatorState.standBy;
+    //         buttons[buttonPressed - 1] = false; // Button light is now off once delivery complete
+
+    //         // Perhaps once in standby from the scheduler's requests elevator should check
+    //         // that there are no more buttons[] pressed by checking if any buttons are still
+    //         // pressed, and if they are it calls a function to traverse to that floor in
+    //         // which
+    //         // it drops off the remaining passengers...
+    //     }
+    // }
+
+    @Override
     public void run() {
-        // Call will depend on scheduler's class. Needs to be filled out.
-        // scheduler.sendLamps(boolean lamps);
-        while (true) {
+        try {
+            while (true) {
+                byte[] receiveBytes = new byte[200];
+                this.receivePacket = new DatagramPacket(receiveBytes, receiveBytes.length);
+                System.out.println("[Elevator Port " + this.port + "]: Waiting for floor request...");
+                this.socket.receive(this.receivePacket);
 
-            // Passenger person = scheduler.getNextRequest();
-            byte receiveBytes[] = new byte[200];
-            this.receivePacket = new DatagramPacket(receiveBytes, receiveBytes.length);
-            try {
-                System.out.println("Elevator: Waiting.....\n");
-                this.socket.receive(receivePacket);
-            } catch (IOException e) {
-                System.err.println(e);
+                System.out.println("received a floor request");
             }
-
-            System.out.println("Elevator: Packet received");
-            FloorRequest person = this.decodePassenger(receiveBytes);
-
-            // Once the request is taken all the related information
-            // of the destination is taken from the passenger class
-
-            // Going to passenger
-            doors = false;
-            elevatorState = ElevatorState.stopped;
-            int passengerFloor = person.getFloor();
-
-            if (passengerFloor > carLocation) {
-                elevatorState = ElevatorState.traversingUp;
-            } else if (passengerFloor < carLocation) {
-                elevatorState = ElevatorState.traversingDown;
-            } // If neither then the car will not hit a traversing state
-
-            traverseFloor(carLocation, passengerFloor);
-
-            // Reached passenger now loading inside car
-            elevatorState = ElevatorState.stopped;
-            carLocation = passengerFloor;
-            doors = true;
-            elevatorState = ElevatorState.loading;
-            doors = false;
-            // Passenger choosing their destination
-            int buttonPressed = person.getDestination();
-
-            // Simulating button press on class creation
-            buttons[buttonPressed - 1] = true;
-
-            // Taking passenger to destination
-            if (buttonPressed > carLocation) {
-                elevatorState = ElevatorState.traversingUp;
-            } else if (buttonPressed < carLocation) {
-                elevatorState = ElevatorState.traversingDown;
-            } // If neither then the car will not hit a traversing state
-
-            traverseFloor(carLocation, buttonPressed);
-
-            // Reached Destination now unloading
-            elevatorState = ElevatorState.stopped;
-            carLocation = buttonPressed;
-            doors = true;
-            elevatorState = ElevatorState.unLoading;
-            // Perhaps add delay here in future for loading/unloading times?
-
-            // Got to target floor then gives update to the scheduler
-
-            // scheduler.reachedDestination();
-            try {
-                this.sendPacket = new DatagramPacket(new byte[0], 0, InetAddress.getLocalHost(), 24);
-                this.socket.send(this.sendPacket);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            elevatorState = ElevatorState.standBy;
-            buttons[buttonPressed - 1] = false; // Button light is now off once delivery complete
-
-            // Perhaps once in standby from the scheduler's requests elevator should check
-            // that there are no more buttons[] pressed by checking if any buttons are still
-            // pressed, and if they are it calls a function to traverse to that floor in
-            // which
-            // it drops off the remaining passengers...
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -304,13 +325,9 @@ public class Elevator implements Runnable {
     }
 
     public static void main(String[] args) {
-
-        Thread elevatorThread1 = new Thread(new Elevator(20, 30));
-        Thread elevatorThread2 = new Thread(new Elevator(20, 31));
-        Thread elevatorThread3 = new Thread(new Elevator(20, 32));
-
-        elevatorThread1.start();
-        elevatorThread2.start();
-        elevatorThread3.start();
+        for (int i = 30; i < 31; i++) {
+            Thread elevatorThread = new Thread(new Elevator(20, i));
+            elevatorThread.start();
+        }
     }
 }
