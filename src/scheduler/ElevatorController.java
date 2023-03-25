@@ -42,7 +42,7 @@ public class ElevatorController implements Runnable {
             this.receivePacket = new DatagramPacket(new byte[0], 0);
 
             this.socket.send(this.sendPacket);
-            System.out.println("[ElevatorController Port " + this.elevatorPort + "]: sending floor request to elevator");
+            System.out.println("[ElevatorController]: sending floor request to elevator");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -64,28 +64,74 @@ public class ElevatorController implements Runnable {
         }
     }
 
+    /**
+     * Scans the todo list of floors to
+     * visit and chooses the most suitable floor
+     * to traverse to based on the elevator placement
+     * and current direction.
+     * @return the element index of the best to do
+     */
+    private int findClosestTask() {
+    	int[] eligibilityTable = new int[todoList.size()];
+    	
+    	//Iterating through list of candidates 
+    	for (int task = 0; task < todoList.size(); task++) {
+    		int priority = 0;
+    		
+    		//Checking direction compatibility
+    		if (elevatorInfo.isAscending()) {
+    			if (todoList.get(task).getFloor() < elevatorInfo.getCurrentFloor()){
+    				priority += 20;
+    			}
+    		}else {
+    			if (todoList.get(task).getFloor() > elevatorInfo.getCurrentFloor()) {
+    				priority += 20;
+    			}
+    		}
+    		
+    		//Gauging distance from the current floor 
+    		priority += Math.abs(elevatorInfo.getCurrentFloor() - todoList.get(task).getFloor());	
+    		eligibilityTable[task] = priority;
+    	}
+    	
+		// Iterating through array and returning the smallest element's
+		// index which is the best suited task for the next request.
+		int index = 0;
+		int min = eligibilityTable[index];
+		for (int element = 1; element < eligibilityTable.length; element++) {
+			if (eligibilityTable[element] <= min) {
+				min = eligibilityTable[element];
+				index = element;
+			}
+		}
+		return index;
+    }
+
     @Override
     public void run() {
         try {
             while (true) {
                 boolean hasFloorRequests = !this.todoList.isEmpty();
                 if (hasFloorRequests) {
-                    FloorRequest floorRequest = this.todoList.remove(0);
+                    FloorRequest floorRequest = this.todoList.remove(this.findClosestTask());
                     
                     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                     ObjectOutput objectOutput = new ObjectOutputStream(outputStream);
                     objectOutput.writeObject(floorRequest);
                     objectOutput.close();
+
                     byte[] sendBytes = outputStream.toByteArray();
                     this.sendToElevator(sendBytes);
 
                     // track progress as it reaches passenger floor
                     this.elevatorInfo.setAscending(this.elevatorInfo.getCurrentFloor() > floorRequest.getFloor());
                     this.trackLocation(this.elevatorInfo.getCurrentFloor(), floorRequest.getFloor());            
+                    System.out.println("Elevator picked up passengers");
 
                     // // track progress as it reaches destination
                     this.elevatorInfo.setAscending(this.elevatorInfo.getCurrentFloor() > floorRequest.getDestination());
                     this.trackLocation(this.elevatorInfo.getCurrentFloor(), floorRequest.getDestination());            
+                    System.out.println("Elevator reached destination");
                 }
     
                 Thread.sleep(1000);

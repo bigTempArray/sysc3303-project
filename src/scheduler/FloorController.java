@@ -39,10 +39,10 @@ public class FloorController implements Runnable {
             passenger = (FloorRequest) iStream.readObject();
             iStream.close();
 
-            System.out.println("[Floor controller]: Received passenger: \n" + passenger);
+            // System.out.println("[Floor controller]: Received passenger: \n" + passenger);
             
             this.sendPacket = new DatagramPacket(new byte[0], 0, InetAddress.getLocalHost(), this.receivePacket.getPort());
-            System.out.println("[Floor controller]: sending acknowledgement");
+            // System.out.println("[Floor controller]: sending acknowledgement");
             this.socket.send(this.sendPacket);
 
             return passenger;
@@ -58,7 +58,7 @@ public class FloorController implements Runnable {
     public void run() {
         while (true) {
             FloorRequest floorRequest = this.receiveFloorRequest();
-            System.out.println("[Floor controller]: adding passenger to floor requests list in scheduler");
+            // System.out.println("[Floor controller]: adding passenger to floor requests list in scheduler");
             this.scheduler.floorRequests.add(floorRequest);
         }
     }

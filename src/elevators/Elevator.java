@@ -163,16 +163,16 @@ public class Elevator implements Runnable {
     @Override
     public void run() {
         try {
-            // while (true) {
+            while (true) {
                 byte[] receiveBytes = new byte[200];
                 this.receivePacket = new DatagramPacket(receiveBytes, receiveBytes.length);
                 this.socket.receive(this.receivePacket);
-                System.out.println("[Elevator Port " + this.port + "]: received a floor request");
+                System.out.println("[" + this.getName() + "]: received a floor request");
 
                 FloorRequest floorRequest = this.decodePassenger(receiveBytes);
 
                 // go pick up passenger
-                System.out.println("[Elevator]: going to pick up passenger");
+                System.out.println("[" + this.getName() + "]: going to pick up passenger");
                 this.doorsOpen = false;
                 int passengerFloor = floorRequest.getFloor();
                 if (passengerFloor > carLocation) {
@@ -218,7 +218,7 @@ public class Elevator implements Runnable {
                 // pressed, and if they are it calls a function to traverse to that floor in
                 // which
                 // it drops off the remaining passengers...
-            // }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -241,8 +241,8 @@ public class Elevator implements Runnable {
                                                                                               // milliseconds
         long singleFloorDelay = tripDelay / floorDifference; // Crude representation of time each floor car will be at
 
-        System.out.println("[Elevator]: Traversing to floor " + destinationFloor);
-        System.out.println("[Elevator]: On floor " + startingFloor);
+        System.out.println("[" + this.getName() + "]: On floor " + startingFloor);
+        System.out.println("[" + this.getName() + "]: Traversing to floor " + destinationFloor);
         int currentFloor = startingFloor;
 
         for (int floorsTraversed = 0; floorsTraversed < floorDifference; floorsTraversed++) {
@@ -253,7 +253,7 @@ public class Elevator implements Runnable {
             }
             // Increments or decrements based on which direction the elevator is moving
             currentFloor = (this.getState() == ElevatorState.traversingUp) ? currentFloor + 1 : currentFloor - 1;
-            System.out.println("[Elevator]: Reached floor " + currentFloor);
+            System.out.println("[" + this.getName() + "]: Reached floor " + currentFloor);
             /**
              * Perhaps this is where for the UDP implementation you send a datagram to the
              * scheduler to let it know that this elevator is now on the current floor it is
@@ -275,7 +275,10 @@ public class Elevator implements Runnable {
                 e.printStackTrace();
             }
         }
+    }
 
+    private String getName() {
+        return "Elevator-" + this.port;
     }
 
     private FloorRequest decodePassenger(byte[] bytes) {
@@ -292,7 +295,7 @@ public class Elevator implements Runnable {
     }
 
     public static void main(String[] args) {
-        for (int i = 30; i < 31; i++) {
+        for (int i = 30; i < 33; i++) {
             Thread elevatorThread = new Thread(new Elevator(20, i));
             elevatorThread.start();
         }
