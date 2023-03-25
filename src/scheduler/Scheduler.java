@@ -116,15 +116,14 @@ public class Scheduler {
 				boolean hasFloorRequests = !this.floorRequests.isEmpty();
 				if (hasFloorRequests) {
 					FloorRequest floorRequest = this.floorRequests.poll();
-					System.out.println("[Scheduler]: found a new floor request at floor: " + floorRequest.getFloor());
+					System.out.println("[Scheduler]: found a new floor request");
 	
 					int bestElevatorIndex = this.findBestElevator(floorRequest.getFloor());
 					int elevatorPort = this.elevatorControllers.get(bestElevatorIndex).elevatorPort;
-					System.out.println("[Scheduler]: best controller is: " + elevatorPort);
 					ElevatorController controller = this.getElevatorController(elevatorPort);
 					if (controller != null) {
 						controller.todoList.add(floorRequest);
-						System.out.println("[Scheduler]: added new request in elevator controller");
+						System.out.println("[Scheduler]: added new request to elevator controller " + elevatorPort);
 					}
 				}
 				
