@@ -29,7 +29,7 @@ public class ElevatorController implements Runnable {
         this.todoList = new ArrayList<>();
 
         try {
-            this.socket = new DatagramSocket();
+            this.socket = new DatagramSocket(controllerPort);
         } catch (SocketException e) {
             e.printStackTrace();
             System.exit(1);
@@ -43,6 +43,22 @@ public class ElevatorController implements Runnable {
 
             this.socket.send(this.sendPacket);
             System.out.println("[ElevatorController Port " + this.elevatorPort + "]: sending floor request to elevator");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void trackLocation(int origin, int end) {
+        try {
+            byte[] receiveBytes = new byte[1];
+            this.receivePacket = new DatagramPacket(receiveBytes, receiveBytes.length);
+    
+            while (this.elevatorInfo.getCurrentFloor() != end) {
+                this.socket.receive(this.receivePacket);
+                int location = (byte) receiveBytes[0];
+                System.out.println("[ElevatorController]: elevator's current position is: " + location);
+                this.elevatorInfo.setCurrentFloor(location);
+            }   
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -63,9 +79,11 @@ public class ElevatorController implements Runnable {
                     byte[] sendBytes = outputStream.toByteArray();
                     this.sendToElevator(sendBytes);
 
-                    // receive location for loop
+                    // track progress as it reaches passenger floor
+                    this.trackLocation(this.elevatorInfo.getCurrentFloor(), floorRequest.getFloor());            
 
-                    
+                    // // track progress as it reaches destination
+                    this.trackLocation(this.elevatorInfo.getCurrentFloor(), floorRequest.getDestination());            
                 }
     
                 Thread.sleep(1000);
