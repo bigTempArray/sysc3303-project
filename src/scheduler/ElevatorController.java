@@ -80,9 +80,11 @@ public class ElevatorController implements Runnable {
                     this.sendToElevator(sendBytes);
 
                     // track progress as it reaches passenger floor
+                    this.elevatorInfo.setAscending(this.elevatorInfo.getCurrentFloor() > floorRequest.getFloor());
                     this.trackLocation(this.elevatorInfo.getCurrentFloor(), floorRequest.getFloor());            
 
                     // // track progress as it reaches destination
+                    this.elevatorInfo.setAscending(this.elevatorInfo.getCurrentFloor() > floorRequest.getDestination());
                     this.trackLocation(this.elevatorInfo.getCurrentFloor(), floorRequest.getDestination());            
                 }
     
