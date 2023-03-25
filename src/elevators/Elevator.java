@@ -25,11 +25,11 @@ public class Elevator implements Runnable {
     private int numberOfFloors = 0;
     private int carLocation; // Where the elevator is situated currently
     private boolean buttons[]; // true means pressed, false otherwise
-    private boolean doors; // true is open, false is closed
+    private boolean doorsOpen; // true is open, false is closed
     private Engine motor;
     // private Scheduler scheduler; // elevator's communication line with the
     // scheduler
-    private ElevatorState elevatorState; // Contains the current state of the elevator in state machine fashion
+    private ElevatorState state; // Contains the current state of the elevator in state machine fashion
 
     private DatagramPacket sendPacket, receivePacket;
     private DatagramSocket socket;
@@ -79,7 +79,7 @@ public class Elevator implements Runnable {
     }
 
     public boolean doorStatus() {
-        return doors;
+        return doorsOpen;
     }
 
     public int getCarFloorLocation() {
@@ -87,7 +87,7 @@ public class Elevator implements Runnable {
     }
 
     public ElevatorState getState() {
-        return elevatorState;
+        return state;
     }
 
     /**
@@ -103,7 +103,7 @@ public class Elevator implements Runnable {
         // this.scheduler = scheduler;
         this.numberOfFloors = highestFloor;
         this.buttons = new boolean[numberOfFloors];
-        this.doors = true;
+        this.doorsOpen = true;
         // Instantiating engine specification
         this.motor = new Engine(10, 1.1, 3, 2, 0.3, 4); // See engine class for parameter details
         this.carLocation = 1;
@@ -120,36 +120,36 @@ public class Elevator implements Runnable {
 
     // event for loading elevator
     public void loadElevator() {
-        doors = true;
-        elevatorState = ElevatorState.loading;
+        doorsOpen = true;
+        state = ElevatorState.loading;
     }
 
     // event for unloading elevator
     public void unLoadElevator() {
-        doors = true;
-        elevatorState = ElevatorState.unLoading;
+        doorsOpen = true;
+        state = ElevatorState.unLoading;
     }
 
     // event for stopping elevator
     public void elevatorStop() {
-        doors = false;
-        elevatorState = ElevatorState.stopped;
+        doorsOpen = false;
+        state = ElevatorState.stopped;
     }
 
     // event for traversing up or down
     public void traverse(int floor) {
-        doors = false;
+        doorsOpen = false;
         if (carLocation < floor) {
-            elevatorState = ElevatorState.traversingUp;
+            state = ElevatorState.traversingUp;
         } else {
-            elevatorState = ElevatorState.traversingDown;
+            state = ElevatorState.traversingDown;
         }
     }
 
     // event for elevator being on standby or free
     public void elevatorAvailable() {
-        doors = true;
-        elevatorState = ElevatorState.standBy;
+        doorsOpen = true;
+        state = ElevatorState.standBy;
     }
 
     /**
@@ -159,87 +159,87 @@ public class Elevator implements Runnable {
      * the 'go-ahead' on which floor to go to first, then the elevator will
      * then execute methods to reach given floor. (Future iteration)
      */
-    // public void run() {
-    //     // Call will depend on scheduler's class. Needs to be filled out.
-    //     // scheduler.sendLamps(boolean lamps);
-    //     while (true) {
+    public void test() {
+        // Call will depend on scheduler's class. Needs to be filled out.
+        // scheduler.sendLamps(boolean lamps);
+        while (true) {
 
-    //         // Passenger person = scheduler.getNextRequest();
-    //         byte receiveBytes[] = new byte[200];
-    //         this.receivePacket = new DatagramPacket(receiveBytes, receiveBytes.length);
-    //         try {
-    //             System.out.println("Elevator: Waiting.....\n");
-    //             this.socket.receive(receivePacket);
-    //         } catch (IOException e) {
-    //             System.err.println(e);
-    //         }
+            // Passenger person = scheduler.getNextRequest();
+            byte receiveBytes[] = new byte[200];
+            this.receivePacket = new DatagramPacket(receiveBytes, receiveBytes.length);
+            try {
+                System.out.println("Elevator: Waiting.....\n");
+                this.socket.receive(receivePacket);
+            } catch (IOException e) {
+                System.err.println(e);
+            }
 
-    //         System.out.println("Elevator: Packet received");
-    //         FloorRequest person = this.decodePassenger(receiveBytes);
+            System.out.println("Elevator: Packet received");
+            FloorRequest person = this.decodePassenger(receiveBytes);
 
-    //         // Once the request is taken all the related information
-    //         // of the destination is taken from the passenger class
+            // Once the request is taken all the related information
+            // of the destination is taken from the passenger class
 
-    //         // Going to passenger
-    //         doors = false;
-    //         elevatorState = ElevatorState.stopped;
-    //         int passengerFloor = person.getFloor();
+            // Going to passenger
+            doorsOpen = false;
+            state = ElevatorState.stopped;
+            int passengerFloor = person.getFloor();
 
-    //         if (passengerFloor > carLocation) {
-    //             elevatorState = ElevatorState.traversingUp;
-    //         } else if (passengerFloor < carLocation) {
-    //             elevatorState = ElevatorState.traversingDown;
-    //         } // If neither then the car will not hit a traversing state
+            if (passengerFloor > carLocation) {
+                state = ElevatorState.traversingUp;
+            } else if (passengerFloor < carLocation) {
+                state = ElevatorState.traversingDown;
+            } // If neither then the car will not hit a traversing state
 
-    //         traverseFloor(carLocation, passengerFloor);
+            traverseFloor(carLocation, passengerFloor);
 
-    //         // Reached passenger now loading inside car
-    //         elevatorState = ElevatorState.stopped;
-    //         carLocation = passengerFloor;
-    //         doors = true;
-    //         elevatorState = ElevatorState.loading;
-    //         doors = false;
-    //         // Passenger choosing their destination
-    //         int buttonPressed = person.getDestination();
+            // Reached passenger now loading inside car
+            state = ElevatorState.stopped;
+            carLocation = passengerFloor;
+            doorsOpen = true;
+            state = ElevatorState.loading;
+            doorsOpen = false;
+            // Passenger choosing their destination
+            int buttonPressed = person.getDestination();
 
-    //         // Simulating button press on class creation
-    //         buttons[buttonPressed - 1] = true;
+            // Simulating button press on class creation
+            buttons[buttonPressed - 1] = true;
 
-    //         // Taking passenger to destination
-    //         if (buttonPressed > carLocation) {
-    //             elevatorState = ElevatorState.traversingUp;
-    //         } else if (buttonPressed < carLocation) {
-    //             elevatorState = ElevatorState.traversingDown;
-    //         } // If neither then the car will not hit a traversing state
+            // Taking passenger to destination
+            if (buttonPressed > carLocation) {
+                state = ElevatorState.traversingUp;
+            } else if (buttonPressed < carLocation) {
+                state = ElevatorState.traversingDown;
+            } // If neither then the car will not hit a traversing state
 
-    //         traverseFloor(carLocation, buttonPressed);
+            traverseFloor(carLocation, buttonPressed);
 
-    //         // Reached Destination now unloading
-    //         elevatorState = ElevatorState.stopped;
-    //         carLocation = buttonPressed;
-    //         doors = true;
-    //         elevatorState = ElevatorState.unLoading;
-    //         // Perhaps add delay here in future for loading/unloading times?
+            // Reached Destination now unloading
+            state = ElevatorState.stopped;
+            carLocation = buttonPressed;
+            doorsOpen = true;
+            state = ElevatorState.unLoading;
+            // Perhaps add delay here in future for loading/unloading times?
 
-    //         // Got to target floor then gives update to the scheduler
+            // Got to target floor then gives update to the scheduler
 
-    //         // scheduler.reachedDestination();
-    //         try {
-    //             this.sendPacket = new DatagramPacket(new byte[0], 0, InetAddress.getLocalHost(), 24);
-    //             this.socket.send(this.sendPacket);
-    //         } catch (Exception e) {
-    //             e.printStackTrace();
-    //         }
-    //         elevatorState = ElevatorState.standBy;
-    //         buttons[buttonPressed - 1] = false; // Button light is now off once delivery complete
+            // scheduler.reachedDestination();
+            try {
+                this.sendPacket = new DatagramPacket(new byte[0], 0, InetAddress.getLocalHost(), 24);
+                this.socket.send(this.sendPacket);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            state = ElevatorState.standBy;
+            buttons[buttonPressed - 1] = false; // Button light is now off once delivery complete
 
-    //         // Perhaps once in standby from the scheduler's requests elevator should check
-    //         // that there are no more buttons[] pressed by checking if any buttons are still
-    //         // pressed, and if they are it calls a function to traverse to that floor in
-    //         // which
-    //         // it drops off the remaining passengers...
-    //     }
-    // }
+            // Perhaps once in standby from the scheduler's requests elevator should check
+            // that there are no more buttons[] pressed by checking if any buttons are still
+            // pressed, and if they are it calls a function to traverse to that floor in
+            // which
+            // it drops off the remaining passengers...
+        }
+    }
 
     @Override
     public void run() {
@@ -247,10 +247,41 @@ public class Elevator implements Runnable {
             while (true) {
                 byte[] receiveBytes = new byte[200];
                 this.receivePacket = new DatagramPacket(receiveBytes, receiveBytes.length);
-                System.out.println("[Elevator Port " + this.port + "]: Waiting for floor request...");
                 this.socket.receive(this.receivePacket);
-
                 System.out.println("[Elevator Port " + this.port + "]: received a floor request");
+
+                FloorRequest floorRequest = this.decodePassenger(receiveBytes);
+
+                // go pick up passenger
+                this.doorsOpen = false;
+                this.state = ElevatorState.stopped;
+                int passengerFloor = floorRequest.getFloor();
+                if (passengerFloor > carLocation) {
+                    this.state = ElevatorState.traversingUp;
+                } else if (passengerFloor < carLocation) {
+                    this.state = ElevatorState.traversingDown;
+                }
+                this.traverseFloor(passengerFloor, passengerFloor);
+                this.state = ElevatorState.stopped;
+                this.carLocation = passengerFloor;
+
+                // load passenger onto elevator
+                this.doorsOpen = true;
+                this.state = ElevatorState.loading;
+                this.doorsOpen = false;
+
+                // simulate button press on class creation
+                int destination = floorRequest.getDestination();
+                this.buttons[destination - 1] = true;
+
+                // take passenger to destination
+                if (destination > carLocation) {
+                    this.state = ElevatorState.traversingUp;
+                } else if (destination < carLocation) {
+                    this.state = ElevatorState.traversingDown;
+                }
+
+
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -300,13 +331,13 @@ public class Elevator implements Runnable {
              * keep track of all the floors it needs to go to drop off the passengers)
              */
 
-            byte[] sendBytes = new byte[] { (byte) currentFloor };
-            try {
-                this.sendPacket = new DatagramPacket(sendBytes, sendBytes.length, InetAddress.getLocalHost(), 24);
-                this.socket.send(this.sendPacket);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            // byte[] sendBytes = new byte[] { (byte) currentFloor };
+            // try {
+            //     this.sendPacket = new DatagramPacket(sendBytes, sendBytes.length, InetAddress.getLocalHost(), 24);
+            //     this.socket.send(this.sendPacket);
+            // } catch (Exception e) {
+            //     e.printStackTrace();
+            // }
         }
 
     }

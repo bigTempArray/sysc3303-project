@@ -14,14 +14,12 @@ import shared.FloorRequest;
  */
 public class Scheduler {
 	public Queue<FloorRequest> floorRequests; // requests from floor system
-	public List<ElevatorInfo> elevatorList;
 	private List<ElevatorController> elevatorControllers;
 	public boolean isTest;
 
 	public Scheduler(boolean test) {
 		this.floorRequests = new LinkedList<>();
-		this.elevatorList = Collections.synchronizedList(new LinkedList<>());
-		this.elevatorControllers = new ArrayList<>();
+		this.elevatorControllers = new LinkedList<>();
 		this.isTest = test;
 
 		// the elevator ports
@@ -30,12 +28,11 @@ public class Scheduler {
 			ElevatorInfo elevatorInfo = new ElevatorInfo();
 			elevatorInfo.setPortNumber(i);
 			elevatorInfo.setCurrentFloor(0);
-			this.elevatorList.add(elevatorInfo);
 
 			// create a thread to control the elevator
-			ElevatorController elevatorControl = new ElevatorController(this, i);
-			this.elevatorControllers.add(elevatorControl);
-			Thread elevatorControlThread = new Thread(elevatorControl, "ElevatorControl" + i);
+			ElevatorController controller = new ElevatorController(this, i, elevatorInfo);
+			this.elevatorControllers.add(controller);
+			Thread elevatorControlThread = new Thread(controller, "ElevatorControl" + i);
 			elevatorControlThread.start();
 		}
 
@@ -55,34 +52,34 @@ public class Scheduler {
 	 * @return the chosen elevator's index within the elevatorList.
 	 */
 	private int findBestElevator(int targetFloor) {
-		int[] eligibilityTable = new int[elevatorList.size()];
+		int[] eligibilityTable = new int[elevatorControllers.size()];
 
 		// Iterating through the list of candidates
-		for (int elevator = 0; elevator < elevatorList.size(); elevator++) {
+		for (int elevator = 0; elevator < elevatorControllers.size(); elevator++) {
 			// Scoring priority amount of car priority (the lower the better)
 			int priority = 0;
 
 			// Standby skips further evaluation as its the better candidate for a request
-			if (elevatorList.get(elevator).isOnStandby()) {
+			if (elevatorControllers.get(elevator).elevatorInfo.isOnStandby()) {
 				eligibilityTable[elevator] = priority;
 				continue;
 			}
 
 			// If too close to destination (to prevent race conditions)
-			if (Math.abs(targetFloor - elevatorList.get(elevator).getCurrentFloor()) < 2) {
+			if (Math.abs(targetFloor - elevatorControllers.get(elevator).elevatorInfo.getCurrentFloor()) < 2) {
 				priority += 20; // Ideally should be half of highest floor number
 			}
-			priority += Math.abs(targetFloor - elevatorList.get(elevator).getCurrentFloor());
+			priority += Math.abs(targetFloor - elevatorControllers.get(elevator).elevatorInfo.getCurrentFloor());
 
 			// Evaluating if elevator is matching the direction of the target floor
-			if (targetFloor - elevatorList.get(elevator).getCurrentFloor() > 0) { // if target is on top of current car
-				if (elevatorList.get(elevator).isAscending()) { // car is already going up towards the target
+			if (targetFloor - elevatorControllers.get(elevator).elevatorInfo.getCurrentFloor() > 0) { // if target is on top of current car
+				if (elevatorControllers.get(elevator).elevatorInfo.isAscending()) { // car is already going up towards the target
 					priority += 4;
 				} else {
 					priority += 8;
 				}
 			} else {
-				if (elevatorList.get(elevator).isAscending()) {
+				if (elevatorControllers.get(elevator).elevatorInfo.isAscending()) {
 					priority += 8;
 				} else {
 					priority += 4;
@@ -122,7 +119,7 @@ public class Scheduler {
 					System.out.println("[Scheduler]: found a new floor request at floor: " + floorRequest.getFloor());
 	
 					int bestElevatorIndex = this.findBestElevator(floorRequest.getFloor());
-					int elevatorPort = this.elevatorList.get(bestElevatorIndex).getPortNumber();
+					int elevatorPort = this.elevatorControllers.get(bestElevatorIndex).elevatorPort;
 					ElevatorController controller = this.getElevatorController(elevatorPort);
 					if (controller != null) {
 						controller.todoList.add(floorRequest);

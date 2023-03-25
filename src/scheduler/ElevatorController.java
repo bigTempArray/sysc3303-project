@@ -14,15 +14,17 @@ import shared.FloorRequest;
 public class ElevatorController implements Runnable {
     private Scheduler scheduler;
     public int elevatorPort;
+    public ElevatorInfo elevatorInfo;
     public int controllerPort;
     public ArrayList<FloorRequest> todoList;
 
     private DatagramSocket socket;
     private DatagramPacket sendPacket, receivePacket;
 
-    public ElevatorController(Scheduler scheduler, int elevatorPort) {
+    public ElevatorController(Scheduler scheduler, int elevatorPort, ElevatorInfo elevatorInfo) {
         this.scheduler = scheduler;
         this.elevatorPort = elevatorPort;
+        this.elevatorInfo = elevatorInfo;
         this.controllerPort = elevatorPort + 10;
         this.todoList = new ArrayList<>();
 
@@ -60,6 +62,10 @@ public class ElevatorController implements Runnable {
                     objectOutput.close();
                     byte[] sendBytes = outputStream.toByteArray();
                     this.sendToElevator(sendBytes);
+
+                    // receive location for loop
+
+                    
                 }
     
                 Thread.sleep(1000);
