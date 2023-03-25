@@ -31,7 +31,7 @@ public class FloorSubsystem {
 /**
  * Default constructor that creates a Floor Subsystem and contains a Scheduler as a shared object
 * */
-    public FloorSubsystem(){
+    public FloorSubsystem() {
         try {
             // send and receive UDP Datagram packets.
             socket = new DatagramSocket();
@@ -46,22 +46,25 @@ public class FloorSubsystem {
  * when the elevator arrives at the persons destionation, the floor will output a update
  *
  * */
-    public void start() throws Exception {
-        Queue<FloorRequest> floorRequests= readFile();
-        while(true){
-            if(!floorRequests.isEmpty()) {
-                FloorRequest floorRequest = floorRequests.remove();
-                Thread.sleep(floorRequest.getTime() * 1000);
-                System.out.println("---------------------");
-                System.out.println("FloorRequest queued");
-
-                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                ObjectOutput objectOutput = new ObjectOutputStream(outputStream);
-                objectOutput.writeObject(floorRequest);
-                objectOutput.close();
-                byte[] sendBytes = outputStream.toByteArray();
-                send(sendBytes);
+    public void start() {
+        try {
+            Queue<FloorRequest> floorRequests= readFile();
+            while(true){
+                if(!floorRequests.isEmpty()) {
+                    FloorRequest floorRequest = floorRequests.remove();
+                    Thread.sleep(floorRequest.getTime() * 1000);
+                    System.out.println("[Floor subsystem]: FloorRequest queued");
+    
+                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                    ObjectOutput objectOutput = new ObjectOutputStream(outputStream);
+                    objectOutput.writeObject(floorRequest);
+                    objectOutput.close();
+                    byte[] sendBytes = outputStream.toByteArray();
+                    send(sendBytes);
+                }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
     /**
@@ -126,7 +129,7 @@ public class FloorSubsystem {
     }
     
     
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         FloorSubsystem floorSubsystem = new FloorSubsystem();
         floorSubsystem.start();
     }    

@@ -113,27 +113,31 @@ public class Scheduler {
 		return null;
 	}
 
-	private void start() throws Exception {
-		while (true) {
-			boolean hasFloorRequests = !this.floorRequests.isEmpty();
-			if (hasFloorRequests) {
-				FloorRequest floorRequest = this.floorRequests.poll();
-				System.out.println("[Scheduler]: found a new floor request at floor: " + floorRequest.getFloor());
-
-				int bestElevatorIndex = this.findBestElevator(floorRequest.getFloor());
-				int elevatorPort = this.elevatorList.get(bestElevatorIndex).getPortNumber();
-				ElevatorController controller = this.getElevatorController(elevatorPort);
-				if (controller != null) {
-					controller.todoList.add(floorRequest);
-					System.out.println("[Scheduler]: added new request in elevator controller");
+	private void start() {
+		try {
+			while (true) {
+				boolean hasFloorRequests = !this.floorRequests.isEmpty();
+				if (hasFloorRequests) {
+					FloorRequest floorRequest = this.floorRequests.poll();
+					System.out.println("[Scheduler]: found a new floor request at floor: " + floorRequest.getFloor());
+	
+					int bestElevatorIndex = this.findBestElevator(floorRequest.getFloor());
+					int elevatorPort = this.elevatorList.get(bestElevatorIndex).getPortNumber();
+					ElevatorController controller = this.getElevatorController(elevatorPort);
+					if (controller != null) {
+						controller.todoList.add(floorRequest);
+						System.out.println("[Scheduler]: added new request in elevator controller");
+					}
 				}
+				
+				Thread.sleep(1000);
 			}
-			
-			Thread.sleep(1000);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) {
 		Scheduler scheduler = new Scheduler(false);
 		scheduler.start();
 	}

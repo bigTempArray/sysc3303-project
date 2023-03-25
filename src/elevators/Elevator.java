@@ -250,7 +250,7 @@ public class Elevator implements Runnable {
                 System.out.println("[Elevator Port " + this.port + "]: Waiting for floor request...");
                 this.socket.receive(this.receivePacket);
 
-                System.out.println("received a floor request");
+                System.out.println("[Elevator Port " + this.port + "]: received a floor request");
             }
         } catch (Exception e) {
             e.printStackTrace();
