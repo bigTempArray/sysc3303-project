@@ -23,7 +23,7 @@ public class Scheduler {
 		this.isTest = test;
 
 		// the elevator ports
-		for (int i = 30; i < 31; i++) {
+		for (int i = 30; i < 33; i++) {
 			// create the elevator info object
 			ElevatorInfo elevatorInfo = new ElevatorInfo();
 			elevatorInfo.setPortNumber(i);
@@ -120,6 +120,7 @@ public class Scheduler {
 	
 					int bestElevatorIndex = this.findBestElevator(floorRequest.getFloor());
 					int elevatorPort = this.elevatorControllers.get(bestElevatorIndex).elevatorPort;
+					System.out.println("[Scheduler]: best controller is: " + elevatorPort);
 					ElevatorController controller = this.getElevatorController(elevatorPort);
 					if (controller != null) {
 						controller.todoList.add(floorRequest);

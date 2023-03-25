@@ -53,7 +53,7 @@ public class FloorSubsystem {
                 if(!floorRequests.isEmpty()) {
                     FloorRequest floorRequest = floorRequests.remove();
                     Thread.sleep(floorRequest.getTime() * 1000);
-                    System.out.println("[Floor subsystem]: FloorRequest queued");
+                    // System.out.println("[Floor subsystem]: FloorRequest queued");
     
                     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                     ObjectOutput objectOutput = new ObjectOutputStream(outputStream);
@@ -112,20 +112,20 @@ public class FloorSubsystem {
         this.receivePacket = new DatagramPacket(new byte[0], 0);
 		
         this.socket.send(sendPacket);
-        System.out.println("[Floor sub]: sending Passenger info to the floor control");
+        // System.out.println("[Floor sub]: sending Passenger info to the floor control");
 
         while (true) {
             try {
-                System.out.println("[Floor sub]: waiting for acknowledgement");
+                // System.out.println("[Floor sub]: waiting for acknowledgement");
                 this.socket.receive(this.receivePacket);
                 break;
             } catch (SocketTimeoutException e) {
                 this.socket.send(this.sendPacket);
-                System.out.println("[Floor sub]: sending a passenger to the floor control");
+                // System.out.println("[Floor sub]: sending a passenger to the floor control");
             }
         }
 
-        System.out.println("[Floor sub]: received acknowledgement");
+        // System.out.println("[Floor sub]: received acknowledgement");
     }
     
     
