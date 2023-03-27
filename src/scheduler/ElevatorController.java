@@ -69,7 +69,7 @@ public class ElevatorController implements Runnable {
      * and current direction.
      * @return the element index of the best to do
      */
-    private int findClosestTask() {
+    private synchronized int findClosestTask() {
     	int[] eligibilityTable = new int[todoList.size()];
     	
     	//Iterating through list of candidates 
@@ -88,8 +88,8 @@ public class ElevatorController implements Runnable {
     		}
     		
     		//Gauging distance from the current floor 
-    		priority += Math.abs(elevatorInfo.getCurrentFloor() - todoList.get(task).getFloor());	
-    		eligibilityTable[task] = priority;
+    		priority += Math.abs(elevatorInfo.getCurrentFloor() - todoList.get(task).getFloor());	    
+            eligibilityTable[task] = priority;
     	}
     	
 		// Iterating through array and returning the smallest element's

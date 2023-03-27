@@ -123,7 +123,9 @@ public class Scheduler {
 					int elevatorPort = this.elevatorControllers.get(bestElevatorIndex).elevatorPort;
 					ElevatorController controller = this.getElevatorController(elevatorPort);
 					if (controller != null) {
-						controller.todoList.add(floorRequest);
+						synchronized (controller) {
+							controller.todoList.add(floorRequest);
+						}
 						// System.out.println("[Scheduler]: added new request to elevator controller " + elevatorPort);
 					}
 				}
