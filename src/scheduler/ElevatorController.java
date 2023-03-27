@@ -42,7 +42,7 @@ public class ElevatorController implements Runnable {
             this.receivePacket = new DatagramPacket(new byte[0], 0);
 
             this.socket.send(this.sendPacket);
-            System.out.println("[" + this.getName() + "]: sending floor request to elevator");
+            // System.out.println("[" + this.getName() + "]: sending floor request to elevator");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -56,7 +56,7 @@ public class ElevatorController implements Runnable {
             while (this.elevatorInfo.getCurrentFloor() != end) {
                 this.socket.receive(this.receivePacket);
                 int location = (byte) receiveBytes[0];
-                System.out.println("[" + this.getName() + "]: elevator's current position is: " + location);
+                // System.out.println("[" + this.getName() + "]: elevator's current position is: " + location);
                 this.elevatorInfo.setCurrentFloor(location);
             }   
         } catch (Exception e) {
@@ -129,13 +129,16 @@ public class ElevatorController implements Runnable {
 
                     // track progress as it reaches passenger floor
                     this.elevatorInfo.setAscending(this.elevatorInfo.getCurrentFloor() > floorRequest.getFloor());
+                    this.elevatorInfo.setOnStandby(false);
                     this.trackLocation(this.elevatorInfo.getCurrentFloor(), floorRequest.getFloor());            
-                    System.out.println("[" + this.getName() + "]: elevator picked up passengers");
+                    // System.out.println("[" + this.getName() + "]: elevator picked up passengers");
 
                     // // track progress as it reaches destination
                     this.elevatorInfo.setAscending(this.elevatorInfo.getCurrentFloor() > floorRequest.getDestination());
                     this.trackLocation(this.elevatorInfo.getCurrentFloor(), floorRequest.getDestination());            
-                    System.out.println("[" + this.getName() + "]: elevator reached destination");
+                    // System.out.println("[" + this.getName() + "]: elevator reached destination");
+
+                    this.elevatorInfo.setOnStandby(true);
                 }
     
                 Thread.sleep(1000);

@@ -167,9 +167,8 @@ public class Elevator implements Runnable {
                 byte[] receiveBytes = new byte[200];
                 this.receivePacket = new DatagramPacket(receiveBytes, receiveBytes.length);
                 this.socket.receive(this.receivePacket);
-                System.out.println("[" + this.getName() + "]: received a floor request");
-
                 FloorRequest floorRequest = this.decodePassenger(receiveBytes);
+                System.out.println("[" + this.getName() + "]: received a floor request (" + this.carLocation + " -> " + floorRequest.getFloor() + " -> " + floorRequest.getDestination() + ")");
 
                 // go pick up passenger
                 System.out.println("[" + this.getName() + "]: going to pick up passenger");
@@ -187,6 +186,7 @@ public class Elevator implements Runnable {
                 // load passenger onto elevator
                 this.doorsOpen = true;
                 this.state = ElevatorState.loading;
+                System.out.println("[" + this.getName() + "]: picked up passengers");
 
                 // simulate button press on class creation
                 int destination = floorRequest.getDestination();
@@ -206,6 +206,7 @@ public class Elevator implements Runnable {
                 this.carLocation = destination;
                 this.doorsOpen = true;
                 this.state = ElevatorState.unLoading;
+                System.out.println("[" + this.getName() + "]: reached destination");
 
                 // send udp of having reached destination
 
@@ -235,6 +236,8 @@ public class Elevator implements Runnable {
      */
     private void traverseFloor(int startingFloor, int destinationFloor) {
         int floorDifference = destinationFloor - startingFloor;
+
+        if (floorDifference == 0) return;
 
         // Calculating total trip delay
         long tripDelay = (long) motor.traverseFloors(startingFloor, destinationFloor) * 1000; // Converting to
