@@ -1,11 +1,8 @@
 package scheduler;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-import java.util.Random;
 
 import shared.FloorRequest;
 
@@ -31,7 +28,7 @@ public class Scheduler {
 			elevatorInfo.setCurrentFloor(0);
 
 			// create a thread to control the elevator
-			ElevatorController controller = new ElevatorController(this, i, elevatorInfo);
+			ElevatorController controller = new ElevatorController(i, elevatorInfo);
 			this.elevatorControllers.add(controller);
 			Thread elevatorControlThread = new Thread(controller, "ElevatorControl" + i);
 			elevatorControlThread.start();

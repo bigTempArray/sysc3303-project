@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import shared.FloorRequest;
 
 public class ElevatorController implements Runnable {
-    private Scheduler scheduler;
     public int elevatorPort;
     public ElevatorInfo elevatorInfo;
     public int controllerPort;
@@ -21,8 +20,7 @@ public class ElevatorController implements Runnable {
     private DatagramSocket socket;
     private DatagramPacket sendPacket, receivePacket;
 
-    public ElevatorController(Scheduler scheduler, int elevatorPort, ElevatorInfo elevatorInfo) {
-        this.scheduler = scheduler;
+    public ElevatorController(int elevatorPort, ElevatorInfo elevatorInfo) {
         this.elevatorPort = elevatorPort;
         this.elevatorInfo = elevatorInfo;
         this.controllerPort = elevatorPort + 10;
@@ -107,9 +105,9 @@ public class ElevatorController implements Runnable {
 		return index;
     }
 
-    private String getName() {
-        return "ElevatorController-" + this.elevatorPort;
-    }
+    // private String getName() {
+    //     return "ElevatorController-" + this.elevatorPort;
+    // }
 
     @Override
     public void run() {

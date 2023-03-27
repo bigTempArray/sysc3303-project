@@ -1,7 +1,6 @@
 package elevators;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -272,7 +271,7 @@ public class Elevator implements Runnable {
 
             byte[] sendBytes = new byte[] { (byte) currentFloor };
             try {
-                this.sendPacket = new DatagramPacket(sendBytes, sendBytes.length, InetAddress.getLocalHost(), this.port + 10);
+                this.sendPacket = new DatagramPacket(sendBytes, sendBytes.length, InetAddress.getLocalHost(), this.controllerPort);
                 this.socket.send(this.sendPacket);
             } catch (Exception e) {
                 e.printStackTrace();
