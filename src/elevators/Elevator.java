@@ -240,7 +240,18 @@ public class Elevator implements Runnable {
     private void traverseFloor(int startingFloor, int destinationFloor) {
         int floorDifference = Math.abs(destinationFloor - startingFloor);
 
-        if (floorDifference == 0) return;
+        if (floorDifference == 0) {
+            // TODO: add loading delay? idk
+
+            byte[] sendBytes = new byte[] { (byte) startingFloor };
+            try {
+                this.sendPacket = new DatagramPacket(sendBytes, sendBytes.length, InetAddress.getLocalHost(), this.controllerPort);
+                this.socket.send(this.sendPacket);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return;
+        }
 
         // Calculating total trip delay
         long tripDelay = (long) motor.traverseFloors(startingFloor, destinationFloor) * 1000; // Converting to
