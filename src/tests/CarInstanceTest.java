@@ -8,31 +8,31 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import server.CarInstance;
+import scheduler.ElevatorInfo;
 
 /**
  * @author mayil
  *
  */
 class CarInstanceTest {
-	private CarInstance car;
+	private ElevatorInfo car;
+
 	/**
 	 * 
 	 */
 	@BeforeEach
 	void setUp() throws Exception {
-		 car = new CarInstance();
+		car = new ElevatorInfo();
 	}
+
 	/**
 	 * 
 	 */
 	@Test
 	void testSetGetCurrentFloor() {
 		car.setCurrentFloor(2);
-		assertEquals(2,car.getCurrentFloor());
+		assertEquals(2, car.getCurrentFloor());
 	}
-
-	
 
 	/**
 	 * 
@@ -40,7 +40,7 @@ class CarInstanceTest {
 	@Test
 	void testIsAscending() {
 		assertFalse(car.isAscending());
-		
+
 	}
 
 	/**
@@ -58,7 +58,7 @@ class CarInstanceTest {
 	@Test
 	void testIsOnStandby() {
 		assertTrue(car.isOnStandby());
-		
+
 	}
 
 	/**
@@ -70,16 +70,13 @@ class CarInstanceTest {
 		assertTrue(car.isOnStandby());
 	}
 
-	
-	
-
 	/**
 	 * 
 	 */
 	@Test
 	void testSetPortNumber() {
 		car.setPortNumber(10);
-		assertEquals(10,car.getPortNumber());
+		assertEquals(10, car.getPortNumber());
 	}
 
 }

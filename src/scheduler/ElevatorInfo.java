@@ -1,18 +1,18 @@
-package server;
+package scheduler;
 
-public class CarInstance {
+public class ElevatorInfo {
 	private int currentFloor;
-	private boolean ascending; //true = up, false = down
+	private boolean ascending; // true = up, false = down
 	private boolean onStandby;
 	private int portNumber;
-	
-	public CarInstance() {
+
+	public ElevatorInfo() {
 		currentFloor = 0;
 		ascending = false;
-		onStandby = true; 
+		onStandby = true;
 	}
-	
-	//Basic get and set methods 
+
+	// Basic get and set methods
 	public int getCurrentFloor() {
 		return currentFloor;
 	}
@@ -44,5 +44,5 @@ public class CarInstance {
 	public void setPortNumber(int portNumber) {
 		this.portNumber = portNumber;
 	}
-	
+
 }

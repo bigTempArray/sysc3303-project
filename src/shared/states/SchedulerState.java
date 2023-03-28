@@ -1,4 +1,4 @@
-package states;
+package shared.states;
 
 public enum SchedulerState {
     AVAILABLE,

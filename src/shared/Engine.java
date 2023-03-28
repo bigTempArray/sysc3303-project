@@ -1,4 +1,4 @@
-package elevators;
+package shared;
 import java.lang.Math;
 import java.util.Random;
 

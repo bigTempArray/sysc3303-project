@@ -8,9 +8,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import server.FloorSubsystem;
-import server.Passenger;
-import server.Scheduler;
+import floor.FloorSubsystem;
+import scheduler.Scheduler;
+import shared.FloorRequest;
+
 
 class FloorTest {
 
@@ -20,13 +21,13 @@ class FloorTest {
 	@BeforeEach
 	@DisplayName("Setting prerequisites")
 	public void defaultSetup() {
-		this.floor = new FloorSubsystem(scheduler);
+		this.floor = new FloorSubsystem();
 	}
 
 	@Test
 	@DisplayName("Can properly read input file")
 	public void readInputFileCheck() {
-		Queue<Passenger> passengerQueue = this.floor.readFile();
+		Queue<FloorRequest> passengerQueue = this.floor.readFile();
 
 		// assert there are 3 passengers in the queue
 		assertEquals(3, passengerQueue.size()); 

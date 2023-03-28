@@ -1,22 +1,25 @@
-# Tasks for iteration 3:
+# Tasks for iteration 4:
 - Mayilen:
     - Updated Tests
-    - Updated UML diagram, Sequence diagram
+    - Updated UML diagram, Sequence diagram, Timing Diagram
 - Ben:
-    - Updated Scheduler.java and floor subsystem for UDP
+    - Updated Scheduler.java and floorController 
 - Abdul:
-    - Updated Scheduler for car priority logic
+    - Updated Scheduler & ElevatorController
 - Eric:
-    - updated Scheduler and Elevator for UDP
+    - updated Scheduler and Elevator 
 
 # Files
 - diagrams
-    - iteration 3
-        - Sequence.png
-        - uml.png
+    - iteration 4
+        - SequenceDiagram.png
+        - umlDiagram.png
+        - timingDiagramStuckFault
+        - timingDiagramLostFault
+        - elevatorStateDiagram
 
 - src
-    - Driver.java
+    - Program.java
     - input.txt (the input file)
 
     - elevators
@@ -25,9 +28,9 @@
 
     - server
         - FloorSubsystem.java
-        - Passenger.java
+        - ElevatorInfo.java
         - Scheduler.java
-        - CarInstance.java
+        - ElevatorController.java
 
     - states
         - ElevatorState.java
@@ -39,7 +42,8 @@
         - FloorTest.java
         - SchedulerTest.java
         - carInstanceTest.java
+        
 
 # Running the program
-Run the main method inside elevator and inside driver.java to start the program
+Run the main method inside elevator and inside Program.java to start the program and other main function in  controllers
 

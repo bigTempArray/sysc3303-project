@@ -1,7 +1,7 @@
 /**
  * 
  */
-package states;
+package shared.states;
 
 /**
  * @author mayil
