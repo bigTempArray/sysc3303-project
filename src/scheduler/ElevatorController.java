@@ -7,8 +7,12 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
+import shared.Engine;
 import shared.FloorRequest;
 
 public class ElevatorController implements Runnable {
@@ -16,7 +20,8 @@ public class ElevatorController implements Runnable {
     public ElevatorInfo elevatorInfo;
     public int controllerPort;
     public ArrayList<FloorRequest> todoList;
-
+    private Engine mockEngine;
+    
     private DatagramSocket socket;
     private DatagramPacket sendPacket, receivePacket;
 
@@ -25,6 +30,7 @@ public class ElevatorController implements Runnable {
         this.elevatorInfo = elevatorInfo;
         this.controllerPort = elevatorPort + 10;
         this.todoList = new ArrayList<>();
+        this.mockEngine = new Engine(10, 1.1, 3, 2, 0.3, 4);
 
         try {
             this.socket = new DatagramSocket(controllerPort);
@@ -50,13 +56,22 @@ public class ElevatorController implements Runnable {
         try {
             byte[] receiveBytes = new byte[1];
             this.receivePacket = new DatagramPacket(receiveBytes, receiveBytes.length);
+            
+            // TODO: set socket timeout = floor delay + some latency time here
     
             while (this.elevatorInfo.getCurrentFloor() != end) {
-                this.socket.receive(this.receivePacket);
+                try {
+                    this.socket.receive(this.receivePacket);
+                } catch (SocketTimeoutException e) {
+                    // elevator took too long
+                }
                 int location = (byte) receiveBytes[0];
                 // System.out.println("[" + this.getName() + "]: elevator's current position is: " + location);
                 this.elevatorInfo.setCurrentFloor(location);
             }   
+
+            // TODO: set socket timeout to indefinite here
+            
         } catch (Exception e) {
             e.printStackTrace();
         }
