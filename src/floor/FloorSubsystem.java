@@ -33,7 +33,7 @@ public class FloorSubsystem {
         try {
             // send and receive UDP Datagram packets.
             socket = new DatagramSocket();
-            socket.setSoTimeout(1000);
+            socket.setSoTimeout(50);
         } catch (SocketException se) {
             se.printStackTrace();
             System.exit(1);

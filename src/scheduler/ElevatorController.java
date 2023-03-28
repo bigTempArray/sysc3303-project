@@ -6,11 +6,8 @@ import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import shared.Engine;
 import shared.FloorRequest;
@@ -34,19 +31,32 @@ public class ElevatorController implements Runnable {
 
         try {
             this.socket = new DatagramSocket(controllerPort);
-        } catch (SocketException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
         }
     }
 
     private void sendToElevator(byte[] sendBytes) {
+        this.receivePacket = new DatagramPacket(new byte[1], 1);
+        
         try {
-            this.sendPacket = new DatagramPacket(sendBytes, sendBytes.length, InetAddress.getLocalHost(), this.elevatorPort);
-            this.receivePacket = new DatagramPacket(new byte[0], 0);
-
+            this.sendPacket = new DatagramPacket(sendBytes, sendBytes.length, InetAddress.getLocalHost(), elevatorPort);
+            this.socket.setSoTimeout(1000);
             this.socket.send(this.sendPacket);
             // System.out.println("[" + this.getName() + "]: sending floor request to elevator");
+
+            while (true) {
+                try {
+                    this.socket.receive(this.receivePacket);
+                    break;
+                } catch (SocketTimeoutException e) {
+                    this.socket.send(this.sendPacket);
+                }
+            }
+
+            this.socket.setSoTimeout(0);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -58,6 +68,7 @@ public class ElevatorController implements Runnable {
             this.receivePacket = new DatagramPacket(receiveBytes, receiveBytes.length);
             
             // TODO: set socket timeout = floor delay + some latency time here
+            
     
             while (this.elevatorInfo.getCurrentFloor() != end) {
                 try {
@@ -154,7 +165,7 @@ public class ElevatorController implements Runnable {
                     this.elevatorInfo.setOnStandby(true);
                 }
     
-                Thread.sleep(1000);
+                Thread.sleep(100);
             }
         } catch (Exception e) {
             e.printStackTrace();

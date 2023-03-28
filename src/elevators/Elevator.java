@@ -5,7 +5,6 @@ import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.SocketException;
 
 import shared.Engine;
 import shared.FloorRequest;
@@ -113,7 +112,7 @@ public class Elevator implements Runnable {
 
         try {
             this.socket = new DatagramSocket(port);
-        } catch (SocketException e) {
+        } catch (Exception e) {
             System.err.println(e);
         }
         elevatorAvailable();
@@ -169,6 +168,10 @@ public class Elevator implements Runnable {
                 this.socket.receive(this.receivePacket);
                 FloorRequest floorRequest = this.decodePassenger(receiveBytes);
                 System.out.println("[" + this.getName() + "]: received a floor request (" + this.carLocation + " -> " + floorRequest.getFloor() + " -> " + floorRequest.getDestination() + ")");
+
+                // send acknowledgement
+                this.sendPacket = new DatagramPacket(new byte[1], 1, InetAddress.getLocalHost(), this.controllerPort);
+                this.socket.send(this.sendPacket);
 
                 // go pick up passenger
                 System.out.println("[" + this.getName() + "]: going to pick up passenger");
@@ -235,7 +238,7 @@ public class Elevator implements Runnable {
      * @param destinationFloor the floor the car needs to stop at
      */
     private void traverseFloor(int startingFloor, int destinationFloor) {
-        int floorDifference = destinationFloor - startingFloor;
+        int floorDifference = Math.abs(destinationFloor - startingFloor);
 
         if (floorDifference == 0) return;
 

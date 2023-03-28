@@ -130,7 +130,7 @@ public class Scheduler {
 					}
 				}
 				
-				Thread.sleep(1000);
+				Thread.sleep(100);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
