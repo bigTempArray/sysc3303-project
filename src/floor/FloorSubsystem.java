@@ -13,8 +13,8 @@ import java.net.SocketTimeoutException;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Scanner;
-
 import shared.FloorRequest;
+
 /**
  * Class for floor Subsystem
  * */
@@ -75,6 +75,7 @@ public class FloorSubsystem {
         int floor;
         int destination;
         String[] lines;
+        String faultType;
         Queue<FloorRequest> passengerList = new LinkedList<>();
         try {
             Scanner floorFile = new Scanner(new File("src/input.txt"));
@@ -83,10 +84,11 @@ public class FloorSubsystem {
 
                 lines = floorFile.nextLine().split(" ");
 
-                time = Integer.parseInt(lines[0]);
-                floor = Integer.parseInt(lines[1]);
-                destination = Integer.parseInt(lines[2]);
-                passengerList.add(new FloorRequest(time, floor, destination));
+                time = Integer.parseInt(lines[1]);
+                floor = Integer.parseInt(lines[2]);
+                destination = Integer.parseInt(lines[3]);
+                faultType = lines[0];
+                passengerList.add(new FloorRequest(time, floor, destination, faultType));
 
             }
             floorFile.close();

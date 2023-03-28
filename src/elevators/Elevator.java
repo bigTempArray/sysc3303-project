@@ -91,8 +91,9 @@ public class Elevator implements Runnable {
         return state;
     }
 
-    public void breakElevator() {
+    public void breakElevator() throws Exception {
         this.isElevatorBroken = true;
+        throw new Exception("[" + this.getName() + "]: elevator broke");
     }
 
     public boolean isElevatorBroken() {
@@ -101,6 +102,7 @@ public class Elevator implements Runnable {
 
     public void breakDoors() {
         this.isDoorsBroken = true;
+        System.out.println(new Exception("[" + this.getName() + "]: doors broke (fixing)"));
     }
 
     public void fixDoors() {
@@ -185,7 +187,7 @@ public class Elevator implements Runnable {
     @Override
     public void run() {
         try {
-            while (true) {
+            while (this.isElevatorBroken == false) {
                 byte[] receiveBytes = new byte[200];
                 this.receivePacket = new DatagramPacket(receiveBytes, receiveBytes.length);
                 this.socket.receive(this.receivePacket);
@@ -196,9 +198,20 @@ public class Elevator implements Runnable {
                 this.sendPacket = new DatagramPacket(new byte[1], 1);
                 this.socket.send(this.sendPacket);
 
+                // inject faults here from floor request
+                if (floorRequest.getFaultType().equals("elevator")) {
+                    System.out.println("[" + this.getName() + "]: injecting elevator fault");
+                    this.breakElevator();
+                } else if (floorRequest.getFaultType().equals("doors")) {
+                    System.out.println("[" + this.getName() + "]: injecting doors fault");
+                    this.breakDoors();
+                }
+                
+                // set door state to closed
+                this.setDoorState(false);
+                
                 // go pick up passenger
                 System.out.println("[" + this.getName() + "]: going to pick up passenger");
-                this.doorsOpen = false;
                 int passengerFloor = floorRequest.getFloor();
                 if (passengerFloor > carLocation) {
                     this.state = ElevatorState.traversingUp;
@@ -209,8 +222,10 @@ public class Elevator implements Runnable {
                 this.state = ElevatorState.stopped;
                 this.carLocation = passengerFloor;
 
+                // set door state to open
+                this.setDoorState(true);
+
                 // load passenger onto elevator
-                this.doorsOpen = true;
                 this.state = ElevatorState.loading;
                 System.out.println("[" + this.getName() + "]: picked up passengers");
 
@@ -218,8 +233,10 @@ public class Elevator implements Runnable {
                 int destination = floorRequest.getDestination();
                 this.buttons[destination - 1] = true;
 
+                // set door state to closed
+                this.setDoorState(false);
+                
                 // take passenger to destination
-                this.doorsOpen = false;
                 if (destination > carLocation) {
                     this.state = ElevatorState.traversingUp;
                 } else if (destination < carLocation) {
@@ -230,9 +247,11 @@ public class Elevator implements Runnable {
                 // reached destination
                 this.state = ElevatorState.stopped;
                 this.carLocation = destination;
-                this.doorsOpen = true;
                 this.state = ElevatorState.unLoading;
                 System.out.println("[" + this.getName() + "]: reached destination (" + destination + ")");
+
+                // set door state to open
+                this.setDoorState(true);
 
                 // send udp of having reached destination
 
@@ -247,7 +266,7 @@ public class Elevator implements Runnable {
                 // it drops off the remaining passengers...
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println(e);
         }
     }
 
@@ -264,10 +283,11 @@ public class Elevator implements Runnable {
         int floorDifference = Math.abs(destinationFloor - startingFloor);
 
         if (floorDifference == 0) {
-            // TODO: add loading delay? idk
-
-            byte[] sendBytes = new byte[] { (byte) startingFloor };
             try {
+                // loading process
+                Thread.sleep(1000);
+
+                byte[] sendBytes = new byte[] { (byte) startingFloor };
                 this.sendPacket = new DatagramPacket(sendBytes, sendBytes.length);
                 this.socket.send(this.sendPacket);
             } catch (Exception e) {
@@ -311,8 +331,29 @@ public class Elevator implements Runnable {
                 this.sendPacket = new DatagramPacket(sendBytes, sendBytes.length);
                 this.socket.send(this.sendPacket);
             } catch (Exception e) {
-                e.printStackTrace();
+                System.out.println(e);
             }
+        }
+    }
+
+    private void setDoorState(boolean doorsOpen) {
+        try {
+            // pause if doors are broken
+            if (this.isDoorsBroken) {
+                Thread.sleep(5000);
+                System.out.println("[" + this.getName() + "]: doors fixed, resuming");
+                this.fixDoors();
+            }
+    
+            // set door state
+            this.doorsOpen = doorsOpen;
+            
+            // send udp of door state
+            byte[] sendBytes = new byte[] { (byte) (doorsOpen ? 1 : 0) };
+            this.sendPacket = new DatagramPacket(sendBytes, sendBytes.length);
+            this.socket.send(this.sendPacket);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

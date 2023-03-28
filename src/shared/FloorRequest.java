@@ -8,6 +8,7 @@ public class FloorRequest implements Serializable {
     private int time;
     private int floor;
     private int destination;
+    private String faultType;
 
     /***
      * Default constructor to create a passenger
@@ -17,11 +18,11 @@ public class FloorRequest implements Serializable {
      * @param destination   int for the destination floor
      */
 
-    public FloorRequest(int time, int floor, int destination) {
+    public FloorRequest(int time, int floor, int destination, String faultType) {
         this.setTime(time);
         this.setFloor(floor);
         this.setDestination(destination);
-
+        this.setFaultType(faultType);
     }
 
     /**
@@ -64,6 +65,14 @@ public class FloorRequest implements Serializable {
      */
     public void setDestination(int carButton) {
         destination = carButton;
+    }
+
+    public void setFaultType(String faultType) {
+        this.faultType = faultType;
+    }
+
+    public String getFaultType() {
+        return faultType;
     }
 
     public String toString() {

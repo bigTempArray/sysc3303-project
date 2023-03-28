@@ -9,26 +9,28 @@ import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 
-import shared.Engine;
 import shared.FloorRequest;
-import shared.states.DoorState;
 
 public class ElevatorController implements Runnable {
+    public Scheduler scheduler;
     public int elevatorPort;
     public ElevatorInfo elevatorInfo;
     public int controllerPort;
     public ArrayList<FloorRequest> todoList;
-    private Engine mockEngine;
+
+    private int doorsTimeout;
     
     private DatagramSocket socket;
     private DatagramPacket sendPacket, receivePacket;
 
-    public ElevatorController(int elevatorPort, ElevatorInfo elevatorInfo) {
+    public ElevatorController(Scheduler scheduler, int elevatorPort, ElevatorInfo elevatorInfo) {
+        this.scheduler = scheduler;
         this.elevatorPort = elevatorPort;
         this.elevatorInfo = elevatorInfo;
         this.controllerPort = elevatorPort + 10;
         this.todoList = new ArrayList<>();
-        this.mockEngine = new Engine(10, 1.1, 3, 2, 0.3, 4);
+
+        this.doorsTimeout = 3000;
 
         try {
             this.socket = new DatagramSocket(controllerPort);
@@ -65,34 +67,54 @@ public class ElevatorController implements Runnable {
         }
     }
 
-    private void waitForDoorState(DoorState doorState) {
+    private void trackDoors() throws Exception {
+        byte[] receiveBytes = new byte[1];
+        this.receivePacket = new DatagramPacket(receiveBytes, receiveBytes.length);
+
         
+        this.socket.setSoTimeout(this.doorsTimeout);
+        try {
+            this.socket.receive(this.receivePacket);
+        } catch (SocketTimeoutException e1) {
+            this.elevatorInfo.setDoorsBroken(true);
+            System.out.println("[" + this.getName() + "]: doors appear broken, waiting for them to fix");
+
+            // wait another 5 seconds, if they don't fix it, then it must mean the elevator is broken
+            this.socket.setSoTimeout(5000);
+            try {
+                this.socket.receive(receivePacket);
+            } catch (SocketTimeoutException e2) {
+                this.elevatorInfo.setElevatorBroken(true);
+                this.socket.disconnect();
+                for (FloorRequest request : this.todoList) {
+                    this.scheduler.floorRequests.add(request);
+                    System.out.println("[" + this.getName() + "]: elevator is broken, returning request to scheduler");
+                }
+                throw new Exception("[" + this.getName() + "]: Elevator broken indefinitely");
+            }
+            this.elevatorInfo.setDoorsBroken(false);
+        }
+        
+
+        boolean isDoorsOpen = receiveBytes[0] == 1;
+        this.elevatorInfo.setDoorsOpen(isDoorsOpen);
+        // System.out.println("[" + this.getName() + "]: doors are now " + (isDoorsOpen ? "open" : "closed"));
     }
 
-    private void trackLocation(int origin, int end) {
-        try {
-            byte[] receiveBytes = new byte[1];
-            this.receivePacket = new DatagramPacket(receiveBytes, receiveBytes.length);
-            
-            // TODO: set socket timeout = floor delay + some latency time here
-            
-    
-            while (this.elevatorInfo.getCurrentFloor() != end) {
-                try {
-                    this.socket.receive(this.receivePacket);
-                } catch (SocketTimeoutException e) {
-                    // elevator took too long
-                }
-                int location = (byte) receiveBytes[0];
-                // System.out.println("[" + this.getName() + "]: elevator's current position is: " + location);
-                this.elevatorInfo.setCurrentFloor(location);
-            }   
+    private void trackLocation(int origin, int end) throws Exception {
+        byte[] receiveBytes = new byte[1];
+        this.receivePacket = new DatagramPacket(receiveBytes, receiveBytes.length);
 
-            // TODO: set socket timeout to indefinite here
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        while (this.elevatorInfo.getCurrentFloor() != end) {
+            try {
+                this.socket.receive(this.receivePacket);
+            } catch (SocketTimeoutException e) {
+                // elevator took too long
+            }
+            int location = (byte) receiveBytes[0];
+            // System.out.println("[" + this.getName() + "]: elevator's current position is: " + location);
+            this.elevatorInfo.setCurrentFloor(location);
+        }  
     }
 
     /**
@@ -138,14 +160,14 @@ public class ElevatorController implements Runnable {
 		return index;
     }
 
-    // private String getName() {
-    //     return "ElevatorController-" + this.elevatorPort;
-    // }
+    private String getName() {
+        return "ElevatorController-" + this.elevatorPort;
+    }
 
     @Override
     public void run() {
         try {
-            while (true) {
+            while (this.elevatorInfo.isElevatorBroken() == false) {
                 boolean hasFloorRequests = !this.todoList.isEmpty();
                 if (hasFloorRequests) {
                     FloorRequest floorRequest = this.todoList.remove(this.findClosestTask());
@@ -161,16 +183,16 @@ public class ElevatorController implements Runnable {
                     // track progress as it reaches passenger floor
                     this.elevatorInfo.setAscending(this.elevatorInfo.getCurrentFloor() > floorRequest.getFloor());
                     this.elevatorInfo.setOnStandby(false);
-                    this.waitForDoorState(DoorState.Closed);
+                    this.trackDoors();
                     this.trackLocation(this.elevatorInfo.getCurrentFloor(), floorRequest.getFloor());            
-                    this.waitForDoorState(DoorState.Open);
+                    this.trackDoors();
                     // System.out.println("[" + this.getName() + "]: elevator picked up passengers");
 
                     // // track progress as it reaches destination
                     this.elevatorInfo.setAscending(this.elevatorInfo.getCurrentFloor() > floorRequest.getDestination());
-                    this.waitForDoorState(DoorState.Closed);
+                    this.trackDoors();
                     this.trackLocation(this.elevatorInfo.getCurrentFloor(), floorRequest.getDestination());            
-                    this.waitForDoorState(DoorState.Open);
+                    this.trackDoors();
                     // System.out.println("[" + this.getName() + "]: elevator reached destination");
 
                     this.elevatorInfo.setOnStandby(true);
@@ -179,7 +201,7 @@ public class ElevatorController implements Runnable {
                 Thread.sleep(100);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println(e);
         }
     }
 }

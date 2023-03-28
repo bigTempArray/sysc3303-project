@@ -25,10 +25,10 @@ public class Scheduler {
 			// create the elevator info object
 			ElevatorInfo elevatorInfo = new ElevatorInfo();
 			elevatorInfo.setPortNumber(i);
-			elevatorInfo.setCurrentFloor(0);
+			elevatorInfo.setCurrentFloor(1);
 
 			// create a thread to control the elevator
-			ElevatorController controller = new ElevatorController(i, elevatorInfo);
+			ElevatorController controller = new ElevatorController(this, i, elevatorInfo);
 			this.elevatorControllers.add(controller);
 			Thread elevatorControlThread = new Thread(controller, "ElevatorControl" + i);
 			elevatorControlThread.start();
@@ -60,6 +60,12 @@ public class Scheduler {
 			// Standby skips further evaluation as its the better candidate for a request
 			if (elevatorControllers.get(elevator).elevatorInfo.isOnStandby()) {
 				eligibilityTable[elevator] = priority;
+				continue;
+			}
+
+			// If elevator is broken, skip further evaluation
+			if (elevatorControllers.get(elevator).elevatorInfo.isElevatorBroken()) {
+				eligibilityTable[elevator] = 10000;
 				continue;
 			}
 

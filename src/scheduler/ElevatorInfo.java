@@ -5,11 +5,12 @@ public class ElevatorInfo {
 	private boolean ascending; // true = up, false = down
 	private boolean onStandby;
 	private int portNumber;
+	private boolean doorsOpen;
 	private boolean isDoorsBroken;
 	private boolean isElevatorBroken;
 
 	public ElevatorInfo() {
-		currentFloor = 0;
+		currentFloor = 1;
 		ascending = false;
 		onStandby = true;
 		isDoorsBroken = false;
@@ -47,6 +48,14 @@ public class ElevatorInfo {
 
 	public void setPortNumber(int portNumber) {
 		this.portNumber = portNumber;
+	}
+
+	public void setDoorsOpen(boolean doorsOpen) {
+		this.doorsOpen = doorsOpen;
+	}
+
+	public boolean isDoorsOpen() {
+		return this.doorsOpen;
 	}
 
 	public void setDoorsBroken(boolean isDoorsBroken) {
