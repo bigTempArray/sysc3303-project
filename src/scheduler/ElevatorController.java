@@ -128,7 +128,7 @@ public class ElevatorController implements Runnable {
     	int[] eligibilityTable = new int[todoList.size()];
     	
     	//Iterating through list of candidates 
-    	for (int task = 0; task < todoList.size(); task++) {
+    	for (int task = 0; task < eligibilityTable.length; task++) {
     		int priority = 0;
     		
     		//Checking direction compatibility
