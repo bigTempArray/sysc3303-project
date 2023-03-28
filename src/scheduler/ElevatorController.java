@@ -77,7 +77,7 @@ public class ElevatorController implements Runnable {
             this.socket.receive(this.receivePacket);
         } catch (SocketTimeoutException e1) {
             this.elevatorInfo.setDoorsBroken(true);
-            System.out.println("[" + this.getName() + "]: doors appear broken, waiting for them to fix");
+            System.out.println(new Exception("[" + this.getName() + "]: doors appear broken, waiting for them to fix"));
 
             // wait another 5 seconds, if they don't fix it, then it must mean the elevator is broken
             this.socket.setSoTimeout(5000);
