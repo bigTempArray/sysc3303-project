@@ -1,7 +1,3 @@
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.PortUnreachableException;
-
 import elevators.Elevator;
 import floor.FloorSubsystem;
 import scheduler.Scheduler;
@@ -29,8 +25,6 @@ public class Program {
                     Scheduler.main(args);
                 }
             }).start();
-            
-            
         } catch (Exception e) {
             e.printStackTrace();
         }

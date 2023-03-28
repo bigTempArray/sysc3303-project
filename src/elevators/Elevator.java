@@ -29,6 +29,8 @@ public class Elevator implements Runnable {
     // private Scheduler scheduler; // elevator's communication line with the
     // scheduler
     private ElevatorState state; // Contains the current state of the elevator in state machine fashion
+    private boolean isDoorsBroken;
+    private boolean isElevatorBroken;
 
     private DatagramPacket sendPacket, receivePacket;
     private DatagramSocket socket;
@@ -89,6 +91,26 @@ public class Elevator implements Runnable {
         return state;
     }
 
+    public void breakElevator() {
+        this.isElevatorBroken = true;
+    }
+
+    public boolean isElevatorBroken() {
+        return this.isElevatorBroken;
+    }
+
+    public void breakDoors() {
+        this.isDoorsBroken = true;
+    }
+
+    public void fixDoors() {
+        this.isDoorsBroken = false;
+    }
+
+    public boolean isDoorsBroken() {
+        return this.isDoorsBroken;
+    }
+
     /**
      * Constructor method sets the chosen configuration for the system
      * Future iterations buttonPressed may be a list for multiple floors chosen
@@ -112,6 +134,7 @@ public class Elevator implements Runnable {
 
         try {
             this.socket = new DatagramSocket(port);
+            this.socket.connect(InetAddress.getLocalHost(), this.controllerPort);
         } catch (Exception e) {
             System.err.println(e);
         }
@@ -170,7 +193,7 @@ public class Elevator implements Runnable {
                 System.out.println("[" + this.getName() + "]: received a floor request (" + this.carLocation + " -> " + floorRequest.getFloor() + " -> " + floorRequest.getDestination() + ")");
 
                 // send acknowledgement
-                this.sendPacket = new DatagramPacket(new byte[1], 1, InetAddress.getLocalHost(), this.controllerPort);
+                this.sendPacket = new DatagramPacket(new byte[1], 1);
                 this.socket.send(this.sendPacket);
 
                 // go pick up passenger
@@ -209,7 +232,7 @@ public class Elevator implements Runnable {
                 this.carLocation = destination;
                 this.doorsOpen = true;
                 this.state = ElevatorState.unLoading;
-                System.out.println("[" + this.getName() + "]: reached destination");
+                System.out.println("[" + this.getName() + "]: reached destination (" + destination + ")");
 
                 // send udp of having reached destination
 
@@ -245,7 +268,7 @@ public class Elevator implements Runnable {
 
             byte[] sendBytes = new byte[] { (byte) startingFloor };
             try {
-                this.sendPacket = new DatagramPacket(sendBytes, sendBytes.length, InetAddress.getLocalHost(), this.controllerPort);
+                this.sendPacket = new DatagramPacket(sendBytes, sendBytes.length);
                 this.socket.send(this.sendPacket);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -258,8 +281,7 @@ public class Elevator implements Runnable {
                                                                                               // milliseconds
         long singleFloorDelay = tripDelay / floorDifference; // Crude representation of time each floor car will be at
 
-        System.out.println("[" + this.getName() + "]: On floor " + startingFloor);
-        System.out.println("[" + this.getName() + "]: Traversing to floor " + destinationFloor);
+        System.out.println("[" + this.getName() + "]: " + startingFloor);
         int currentFloor = startingFloor;
 
         for (int floorsTraversed = 0; floorsTraversed < floorDifference; floorsTraversed++) {
@@ -270,7 +292,7 @@ public class Elevator implements Runnable {
             }
             // Increments or decrements based on which direction the elevator is moving
             currentFloor = (this.getState() == ElevatorState.traversingUp) ? currentFloor + 1 : currentFloor - 1;
-            System.out.println("[" + this.getName() + "]: Reached floor " + currentFloor);
+            System.out.println("[" + this.getName() + "]: " + currentFloor);
             /**
              * Perhaps this is where for the UDP implementation you send a datagram to the
              * scheduler to let it know that this elevator is now on the current floor it is
@@ -286,7 +308,7 @@ public class Elevator implements Runnable {
 
             byte[] sendBytes = new byte[] { (byte) currentFloor };
             try {
-                this.sendPacket = new DatagramPacket(sendBytes, sendBytes.length, InetAddress.getLocalHost(), this.controllerPort);
+                this.sendPacket = new DatagramPacket(sendBytes, sendBytes.length);
                 this.socket.send(this.sendPacket);
             } catch (Exception e) {
                 e.printStackTrace();

@@ -11,6 +11,7 @@ import java.util.ArrayList;
 
 import shared.Engine;
 import shared.FloorRequest;
+import shared.states.DoorState;
 
 public class ElevatorController implements Runnable {
     public int elevatorPort;
@@ -31,6 +32,7 @@ public class ElevatorController implements Runnable {
 
         try {
             this.socket = new DatagramSocket(controllerPort);
+            this.socket.connect(InetAddress.getLocalHost(), elevatorPort);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
@@ -41,7 +43,8 @@ public class ElevatorController implements Runnable {
         this.receivePacket = new DatagramPacket(new byte[1], 1);
         
         try {
-            this.sendPacket = new DatagramPacket(sendBytes, sendBytes.length, InetAddress.getLocalHost(), elevatorPort);
+            // this.sendPacket = new DatagramPacket(sendBytes, sendBytes.length, InetAddress.getLocalHost(), elevatorPort);
+            this.sendPacket = new DatagramPacket(sendBytes, sendBytes.length);
             this.socket.setSoTimeout(1000);
             this.socket.send(this.sendPacket);
             // System.out.println("[" + this.getName() + "]: sending floor request to elevator");
@@ -60,6 +63,10 @@ public class ElevatorController implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void waitForDoorState(DoorState doorState) {
+        
     }
 
     private void trackLocation(int origin, int end) {
@@ -154,12 +161,16 @@ public class ElevatorController implements Runnable {
                     // track progress as it reaches passenger floor
                     this.elevatorInfo.setAscending(this.elevatorInfo.getCurrentFloor() > floorRequest.getFloor());
                     this.elevatorInfo.setOnStandby(false);
+                    this.waitForDoorState(DoorState.Closed);
                     this.trackLocation(this.elevatorInfo.getCurrentFloor(), floorRequest.getFloor());            
+                    this.waitForDoorState(DoorState.Open);
                     // System.out.println("[" + this.getName() + "]: elevator picked up passengers");
 
                     // // track progress as it reaches destination
                     this.elevatorInfo.setAscending(this.elevatorInfo.getCurrentFloor() > floorRequest.getDestination());
+                    this.waitForDoorState(DoorState.Closed);
                     this.trackLocation(this.elevatorInfo.getCurrentFloor(), floorRequest.getDestination());            
+                    this.waitForDoorState(DoorState.Open);
                     // System.out.println("[" + this.getName() + "]: elevator reached destination");
 
                     this.elevatorInfo.setOnStandby(true);
