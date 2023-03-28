@@ -117,13 +117,9 @@ public class Scheduler {
 	private void start() {
 		try {
 			while (true) {
-				boolean hasFloorRequests = !this.floorRequests.isEmpty();
-				if (hasFloorRequests) {
-					FloorRequest floorRequest = this.floorRequests.poll();
+				FloorRequest floorRequest = this.floorRequests.poll();
+				if (floorRequest != null) {
 					// System.out.println("[Scheduler]: found a new floor request");
-					
-					// Random random = new Random();
-					// int bestElevatorIndex = random.nextInt(this.elevatorControllers.size());
 
 					int bestElevatorIndex = this.findBestElevator(floorRequest.getFloor());
 					int elevatorPort = this.elevatorControllers.get(bestElevatorIndex).elevatorPort;
