@@ -12,6 +12,13 @@ import floor.FloorSubsystem;
 import scheduler.Scheduler;
 import shared.FloorRequest;
 
+/**
+ * 
+ * @author abdul
+ * 
+ * Testing input file reading and validating
+ * correcting information parsing. 
+ */
 
 class FloorTest {
 

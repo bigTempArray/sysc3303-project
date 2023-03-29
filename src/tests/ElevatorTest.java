@@ -1,6 +1,3 @@
-/**
- * 
- */
 package tests;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -15,7 +12,9 @@ import shared.states.ElevatorState;
 
 /**
  * @author abdul
- *
+ * 
+ *(Validates that states correspond to elevator.
+ * logic handling tests done with the ElevatorController) 
  */
 class ElevatorTest {
 

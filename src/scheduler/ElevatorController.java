@@ -84,7 +84,7 @@ public class ElevatorController implements Runnable {
      * and current direction.
      * @return the element index of the best to do
      */
-    private synchronized int findClosestTask() {
+    public synchronized int findClosestTask() {
     	int[] eligibilityTable = new int[todoList.size()];
     	
     	//Iterating through list of candidates 
