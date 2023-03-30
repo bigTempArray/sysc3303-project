@@ -12,31 +12,33 @@ import shared.FloorRequest;
  */
 public class Scheduler {
 	public Queue<FloorRequest> floorRequests; // requests from floor system
-	private List<ElevatorController> elevatorControllers;
+	public List<ElevatorController> elevatorControllers;
 	public boolean isTest;
 
 	public Scheduler(boolean test) {
 		this.floorRequests = new LinkedList<>();
 		this.elevatorControllers = new LinkedList<>();
 		this.isTest = test;
+		
+		if (!this.isTest) {
+			// the elevator ports
+			for (int i = 30; i < 33; i++) {
+				// create the elevator info object
+				ElevatorInfo elevatorInfo = new ElevatorInfo();
+				elevatorInfo.setPortNumber(i);
+				elevatorInfo.setCurrentFloor(0);
 
-		// the elevator ports
-		for (int i = 30; i < 33; i++) {
-			// create the elevator info object
-			ElevatorInfo elevatorInfo = new ElevatorInfo();
-			elevatorInfo.setPortNumber(i);
-			elevatorInfo.setCurrentFloor(1);
+				// create a thread to control the elevator
+				ElevatorController controller = new ElevatorController(i, elevatorInfo);
+				this.elevatorControllers.add(controller);
+				Thread elevatorControlThread = new Thread(controller, "ElevatorControl" + i);
+				elevatorControlThread.start();
+			}
 
-			// create a thread to control the elevator
-			ElevatorController controller = new ElevatorController(this, i, elevatorInfo);
-			this.elevatorControllers.add(controller);
-			Thread elevatorControlThread = new Thread(controller, "ElevatorControl" + i);
-			elevatorControlThread.start();
+			// create the floor control thread
+			Thread floorControlThread = new Thread(new FloorController(this), "FloorControl");
+			floorControlThread.start();
 		}
-
-		// create the floor control thread
-		Thread floorControlThread = new Thread(new FloorController(this), "FloorControl");
-		floorControlThread.start();
 	}
 
 	/**
@@ -49,7 +51,7 @@ public class Scheduler {
 	 *                    will be requested to go to.
 	 * @return the chosen elevator's index within the elevatorList.
 	 */
-	private int findBestElevator(int targetFloor) {
+	public int findBestElevator(int targetFloor) {
 		int[] eligibilityTable = new int[elevatorControllers.size()];
 
 		// Iterating through the list of candidates
