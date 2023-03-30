@@ -29,7 +29,7 @@ public class Scheduler {
 				elevatorInfo.setCurrentFloor(0);
 
 				// create a thread to control the elevator
-				ElevatorController controller = new ElevatorController(i, elevatorInfo);
+				ElevatorController controller = new ElevatorController(this, i, elevatorInfo);
 				this.elevatorControllers.add(controller);
 				Thread elevatorControlThread = new Thread(controller, "ElevatorControl" + i);
 				elevatorControlThread.start();
