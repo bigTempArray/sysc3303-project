@@ -23,13 +23,10 @@ public class Scheduler {
 		if (!this.isTest) {
 			// the elevator ports
 			for (int i = 30; i < 33; i++) {
-				// create the elevator info object
-				ElevatorInfo elevatorInfo = new ElevatorInfo();
-				elevatorInfo.setPortNumber(i);
-				elevatorInfo.setCurrentFloor(0);
+				
 
 				// create a thread to control the elevator
-				ElevatorController controller = new ElevatorController(this, i, elevatorInfo);
+				ElevatorController controller = new ElevatorController(this, i, false);
 				this.elevatorControllers.add(controller);
 				Thread elevatorControlThread = new Thread(controller, "ElevatorControl" + i);
 				elevatorControlThread.start();
@@ -106,7 +103,7 @@ public class Scheduler {
 		return index;
 	}
 
-	private ElevatorController getElevatorController(int elevatorPort) {
+	public ElevatorController getElevatorController(int elevatorPort) {
 		for (ElevatorController controller: this.elevatorControllers) {
 			if (controller.elevatorPort == elevatorPort) {
 				return controller;
@@ -116,7 +113,7 @@ public class Scheduler {
 		return null;
 	}
 
-	private void start() {
+	public void start() {
 		try {
 			while (true) {
 				FloorRequest floorRequest = this.floorRequests.poll();

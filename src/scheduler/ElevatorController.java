@@ -25,22 +25,29 @@ public class ElevatorController implements Runnable {
     public DatagramSocket socket;
     private DatagramPacket sendPacket, receivePacket;
 
-    public ElevatorController(Scheduler scheduler, int elevatorPort, ElevatorInfo elevatorInfo) {
+    public ElevatorController(Scheduler scheduler, int elevatorPort,  boolean isTest) {
         this.scheduler = scheduler;
         this.elevatorPort = elevatorPort;
-        this.elevatorInfo = elevatorInfo;
         this.controllerPort = elevatorPort + 10;
         this.todoList = new ArrayList<>();
         this.mockEngine = new Engine(10, 1.1, 3, 2, 0.3, 4);
 
         this.doorsTimeout = 3000;
 
-        try {
-            this.socket = new DatagramSocket(controllerPort);
-            this.socket.connect(InetAddress.getLocalHost(), elevatorPort);
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(1);
+        // create the elevator info object
+        this.elevatorInfo = new ElevatorInfo();
+        this.elevatorInfo.setPortNumber(elevatorPort);
+        this.elevatorInfo.setCurrentFloor(0);
+
+        if(!isTest){
+
+            try {
+                this.socket = new DatagramSocket(controllerPort);
+                this.socket.connect(InetAddress.getLocalHost(), elevatorPort);
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
         }
     }
 
