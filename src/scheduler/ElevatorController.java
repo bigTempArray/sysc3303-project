@@ -22,7 +22,7 @@ public class ElevatorController implements Runnable {
     public ArrayList<FloorRequest> todoList;
     private Engine mockEngine;
     
-    private DatagramSocket socket;
+    public DatagramSocket socket;
     private DatagramPacket sendPacket, receivePacket;
 
     public ElevatorController(int elevatorPort, ElevatorInfo elevatorInfo) {

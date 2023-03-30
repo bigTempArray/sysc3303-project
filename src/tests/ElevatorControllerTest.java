@@ -18,7 +18,6 @@ import shared.FloorRequest;
  * 
  * Tests will focus on the logic 
  * of finding the best elevator. 
- * 
  *
  */
 
@@ -59,6 +58,7 @@ public class ElevatorControllerTest {
 		car.setAscending(ascending);
 		car.setOnStandby(onStandby);
 		control = new ElevatorController(getRandomPortNumber(), car);
+		control.socket.close();
 	}
 	
 	public int getRandomPortNumber() {
