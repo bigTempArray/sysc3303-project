@@ -128,7 +128,7 @@ public class ElevatorController implements Runnable {
                 this.socket.receive(this.receivePacket);
             } catch (SocketTimeoutException e) {
                 // elevator took too long, therefore broken
-                this.elevatorInfo.setDoorsBroken(true);
+                this.elevatorInfo.setElevatorBroken(true);
                 this.socket.disconnect();
                 throw new Exception("[" + this.getName() + "]: Elevator broken indefinitely");
             }
