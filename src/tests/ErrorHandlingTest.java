@@ -64,7 +64,13 @@ public class ErrorHandlingTest {
             e.printStackTrace();
         }
         
+        try {
+            Thread.sleep(10000);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
+        assertEquals(true, bestController.elevatorInfo.isElevatorBroken());
         assertEquals(0, bestController.todoList.size());
 
         
