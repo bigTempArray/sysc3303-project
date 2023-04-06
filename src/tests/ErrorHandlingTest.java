@@ -56,20 +56,14 @@ public class ErrorHandlingTest {
                 }
             }).start();            
             
-            Thread.sleep(1000);
+            Thread.sleep(5000);
+            assertTrue(eInfo.isDoorsBroken());
             
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        assertTrue(eInfo.isElevatorBroken());
+        
 
         assertEquals(0, bestController.todoList.size());
 
