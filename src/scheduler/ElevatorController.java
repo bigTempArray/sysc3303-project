@@ -39,16 +39,16 @@ public class ElevatorController implements Runnable {
         this.elevatorInfo.setPortNumber(elevatorPort);
         this.elevatorInfo.setCurrentFloor(0);
 
-        if(!isTest){
+        
 
-            try {
-                this.socket = new DatagramSocket(controllerPort);
-                this.socket.connect(InetAddress.getLocalHost(), elevatorPort);
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.exit(1);
-            }
+        try {
+            this.socket = new DatagramSocket(controllerPort);
+            this.socket.connect(InetAddress.getLocalHost(), elevatorPort);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
         }
+        
     }
 
     private void sendToElevator(byte[] sendBytes) {

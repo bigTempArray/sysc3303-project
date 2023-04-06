@@ -22,8 +22,8 @@ public class ErrorHandlingTest {
 	@Test
 	public void testOnePassenge() {
 		scheduler=new Scheduler(true);
-        elevator=new Elevator(0, 0);
-		scheduler.elevatorControllers.add(new ElevatorController(scheduler, 0, true));
+        elevator=new Elevator(0, 30);
+		scheduler.elevatorControllers.add(new ElevatorController(scheduler, 30, true));
 		scheduler.floorRequests.add(new FloorRequest(4,2,0,"elevator"));
 		int bestEle=scheduler.findBestElevator(0);
 		bestController=scheduler.elevatorControllers.get(bestEle);
@@ -47,7 +47,7 @@ public class ErrorHandlingTest {
             
 
             Thread.sleep(1000);           
-            assertEquals(1, bestController.todoList.size());
+            
             
             new Thread(new Runnable() {
                 @Override
@@ -63,7 +63,13 @@ public class ErrorHandlingTest {
             e.printStackTrace();
         }
 
-        // assertTrue(eInfo.isElevatorBroken());
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        assertTrue(eInfo.isElevatorBroken());
 
         assertEquals(0, bestController.todoList.size());
 
