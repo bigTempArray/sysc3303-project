@@ -198,11 +198,8 @@ public class Elevator implements Runnable {
                 this.sendPacket = new DatagramPacket(new byte[1], 1);
                 this.socket.send(this.sendPacket);
 
-                // inject faults here from floor request
-                if (floorRequest.getFaultType().equals("elevator")) {
-                    System.out.println("[" + this.getName() + "]: injecting elevator fault");
-                    this.breakElevator();
-                } else if (floorRequest.getFaultType().equals("doors")) {
+                // inject door fault
+                if (floorRequest.getFaultType().equals("doors")) {
                     System.out.println("[" + this.getName() + "]: injecting doors fault");
                     this.breakDoors();
                 }
@@ -218,6 +215,13 @@ public class Elevator implements Runnable {
                 } else if (passengerFloor < carLocation) {
                     this.state = ElevatorState.traversingDown;
                 }
+
+                // inject elevator fault
+                if (floorRequest.getFaultType().equals("elevator")) {
+                    System.out.println("[" + this.getName() + "]: injecting elevator fault");
+                    this.breakElevator();
+                }
+
                 this.traverseFloor(this.carLocation, passengerFloor);
                 this.state = ElevatorState.stopped;
                 this.carLocation = passengerFloor;

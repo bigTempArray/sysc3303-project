@@ -121,6 +121,9 @@ public class ElevatorController implements Runnable {
         if (floorDifference > 0) {
             long singleFloorDelay = ((tripDelay) / floorDifference) * 3;
             this.socket.setSoTimeout((int) singleFloorDelay);
+        } else {
+            // loading process is one second
+            this.socket.setSoTimeout(1000 * 3);
         }
         
         while (this.elevatorInfo.getCurrentFloor() != end && !this.elevatorInfo.isElevatorBroken()) {
@@ -130,7 +133,7 @@ public class ElevatorController implements Runnable {
                 // elevator took too long, therefore broken
                 this.elevatorInfo.setElevatorBroken(true);
                 this.socket.disconnect();
-                throw new Exception("[" + this.getName() + "]: Elevator broken indefinitely");
+                throw new Exception("[" + this.getName() + "]: Elevator broken indefinitely (after custom timeout)");
             }
             int location = (byte) receiveBytes[0];
             // System.out.println("[" + this.getName() + "]: elevator's current position is: " + location);
@@ -212,7 +215,7 @@ public class ElevatorController implements Runnable {
                     this.trackDoors();
                     // System.out.println("[" + this.getName() + "]: elevator picked up passengers");
 
-                    // // track progress as it reaches destination
+                    // track progress as it reaches destination
                     this.elevatorInfo.setAscending(this.elevatorInfo.getCurrentFloor() > floorRequest.getDestination());
                     this.trackDoors();
                     this.trackLocation(this.elevatorInfo.getCurrentFloor(), floorRequest.getDestination());            
