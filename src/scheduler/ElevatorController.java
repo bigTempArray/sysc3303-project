@@ -37,7 +37,7 @@ public class ElevatorController implements Runnable {
         // create the elevator info object
         this.elevatorInfo = new ElevatorInfo();
         this.elevatorInfo.setPortNumber(elevatorPort);
-        this.elevatorInfo.setCurrentFloor(0);
+        this.elevatorInfo.setCurrentFloor(1);
 
         
 
@@ -142,7 +142,7 @@ public class ElevatorController implements Runnable {
                 throw new Exception("[" + this.getName() + "]: Elevator broken indefinitely (after custom timeout)");
             }
             int location = (byte) receiveBytes[0];
-            // System.out.println("[" + this.getName() + "]: elevator's current position is: " + location);
+            System.out.println("[" + this.getName() + "]: location: " + location + " -> " + end);
             this.elevatorInfo.setCurrentFloor(location);
         }   
 
@@ -204,6 +204,7 @@ public class ElevatorController implements Runnable {
                 boolean hasFloorRequests = !this.todoList.isEmpty();
                 if (hasFloorRequests) {
                     FloorRequest floorRequest = this.todoList.remove(this.findClosestTask());
+                    System.out.println("[" + this.getName() + "]: received a floor request (" + this.elevatorInfo.getCurrentFloor() + " -> " + floorRequest.getFloor() + " -> " + floorRequest.getDestination() + ")");
                     
                     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                     ObjectOutput objectOutput = new ObjectOutputStream(outputStream);
@@ -219,14 +220,14 @@ public class ElevatorController implements Runnable {
                     this.trackDoors();
                     this.trackLocation(this.elevatorInfo.getCurrentFloor(), floorRequest.getFloor());            
                     this.trackDoors();
-                    // System.out.println("[" + this.getName() + "]: elevator picked up passengers");
+                    System.out.println("[" + this.getName() + "]: elevator picked up passengers");
 
                     // track progress as it reaches destination
                     this.elevatorInfo.setAscending(this.elevatorInfo.getCurrentFloor() > floorRequest.getDestination());
                     this.trackDoors();
                     this.trackLocation(this.elevatorInfo.getCurrentFloor(), floorRequest.getDestination());            
                     this.trackDoors();
-                    // System.out.println("[" + this.getName() + "]: elevator reached destination");
+                    System.out.println("[" + this.getName() + "]: elevator reached destination");
 
                     this.elevatorInfo.setOnStandby(true);
                     this.scheduler.processedTask();

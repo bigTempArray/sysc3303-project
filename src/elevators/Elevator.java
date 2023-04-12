@@ -21,7 +21,7 @@ public class Elevator implements Runnable {
 
     // Configurable attributes (lamps and buttons)
     // that can be configured during thread creation
-    private int numberOfFloors = 0;
+    private int numberOfFloors;
     private int carLocation; // Where the elevator is situated currently
     private boolean buttons[]; // true means pressed, false otherwise
     private boolean doorsOpen; // true is open, false is closed
@@ -102,7 +102,7 @@ public class Elevator implements Runnable {
 
     public void breakDoors() {
         this.isDoorsBroken = true;
-        System.out.println(new Exception("[" + this.getName() + "]: doors broke (fixing)"));
+        // System.out.println(new Exception("[" + this.getName() + "]: doors broke (fixing)"));
     }
 
     public void fixDoors() {
@@ -138,7 +138,7 @@ public class Elevator implements Runnable {
             this.socket = new DatagramSocket(port);
             this.socket.connect(InetAddress.getLocalHost(), this.controllerPort);
         } catch (Exception e) {
-            System.err.println(e);
+            // System.err.println(e);
         }
         elevatorAvailable();
     }
@@ -192,7 +192,7 @@ public class Elevator implements Runnable {
                 this.receivePacket = new DatagramPacket(receiveBytes, receiveBytes.length);
                 this.socket.receive(this.receivePacket);
                 FloorRequest floorRequest = this.decodePassenger(receiveBytes);
-                System.out.println("[" + this.getName() + "]: received a floor request (" + this.carLocation + " -> " + floorRequest.getFloor() + " -> " + floorRequest.getDestination() + ")");
+                // System.out.println("[" + this.getName() + "]: received a floor request (" + this.carLocation + " -> " + floorRequest.getFloor() + " -> " + floorRequest.getDestination() + ")");
 
                 // send acknowledgement
                 this.sendPacket = new DatagramPacket(new byte[1], 1);
@@ -200,7 +200,7 @@ public class Elevator implements Runnable {
 
                 // inject door fault
                 if (floorRequest.getFaultType().equals("doors")) {
-                    System.out.println("[" + this.getName() + "]: injecting doors fault");
+                    // System.out.println("[" + this.getName() + "]: injecting doors fault");
                     this.breakDoors();
                 }
                 
@@ -208,7 +208,7 @@ public class Elevator implements Runnable {
                 this.setDoorState(false);
                 
                 // go pick up passenger
-                System.out.println("[" + this.getName() + "]: going to pick up passenger");
+                // System.out.println("[" + this.getName() + "]: going to pick up passenger");
                 int passengerFloor = floorRequest.getFloor();
                 if (passengerFloor > carLocation) {
                     this.state = ElevatorState.traversingUp;
@@ -218,7 +218,7 @@ public class Elevator implements Runnable {
 
                 // inject elevator fault
                 if (floorRequest.getFaultType().equals("elevator")) {
-                    System.out.println("[" + this.getName() + "]: injecting elevator fault");
+                    // System.out.println("[" + this.getName() + "]: injecting elevator fault");
                     this.breakElevator();
                 }
 
@@ -231,7 +231,7 @@ public class Elevator implements Runnable {
 
                 // load passenger onto elevator
                 this.state = ElevatorState.loading;
-                System.out.println("[" + this.getName() + "]: picked up passengers");
+                // System.out.println("[" + this.getName() + "]: picked up passengers");
 
                 // simulate button press on class creation
                 int destination = floorRequest.getDestination();
@@ -252,7 +252,7 @@ public class Elevator implements Runnable {
                 this.state = ElevatorState.stopped;
                 this.carLocation = destination;
                 this.state = ElevatorState.unLoading;
-                System.out.println("[" + this.getName() + "]: reached destination (" + destination + ")");
+                // System.out.println("[" + this.getName() + "]: reached destination (" + destination + ")");
 
                 // set door state to open
                 this.setDoorState(true);
@@ -291,7 +291,7 @@ public class Elevator implements Runnable {
                 // loading process
                 Thread.sleep(1000);
 
-                byte[] sendBytes = new byte[] { (byte) startingFloor };
+                byte[] sendBytes = new byte[] { (byte) this.carLocation };
                 this.sendPacket = new DatagramPacket(sendBytes, sendBytes.length);
                 this.socket.send(this.sendPacket);
             } catch (Exception e) {
@@ -301,13 +301,11 @@ public class Elevator implements Runnable {
         }
 
         // Calculating total trip delay
-        long tripDelay = (long) motor.traverseFloors(startingFloor, destinationFloor) * 1000; // Converting to
+        long tripDelay = (long) motor.traverseFloors(this.carLocation, destinationFloor) * 1000; // Converting to
                                                                                               // milliseconds
         long singleFloorDelay = tripDelay / floorDifference; // Crude representation of time each floor car will be at
 
-        System.out.println("[" + this.getName() + "]: " + startingFloor);
-        int currentFloor = startingFloor;
-
+        // System.out.println("[" + this.getName() + "]: " + startingFloor);
         for (int floorsTraversed = 0; floorsTraversed < floorDifference; floorsTraversed++) {
             try {
                 Thread.sleep(singleFloorDelay);
@@ -315,8 +313,8 @@ public class Elevator implements Runnable {
                 e.printStackTrace();
             }
             // Increments or decrements based on which direction the elevator is moving
-            currentFloor = (this.getState() == ElevatorState.traversingUp) ? currentFloor + 1 : currentFloor - 1;
-            System.out.println("[" + this.getName() + "]: " + currentFloor);
+            this.carLocation = (this.getState() == ElevatorState.traversingUp) ? this.carLocation + 1 : this.carLocation - 1;
+            // System.out.println("[" + this.getName() + "]: " + currentFloor);
             /**
              * Perhaps this is where for the UDP implementation you send a datagram to the
              * scheduler to let it know that this elevator is now on the current floor it is
@@ -330,12 +328,12 @@ public class Elevator implements Runnable {
              * keep track of all the floors it needs to go to drop off the passengers)
              */
 
-            byte[] sendBytes = new byte[] { (byte) currentFloor };
+            byte[] sendBytes = new byte[] { (byte) this.carLocation };
             try {
                 this.sendPacket = new DatagramPacket(sendBytes, sendBytes.length);
                 this.socket.send(this.sendPacket);
             } catch (Exception e) {
-                System.out.println(e);
+                // System.out.println(e);
             }
         }
     }
@@ -345,7 +343,7 @@ public class Elevator implements Runnable {
             // pause if doors are broken
             if (this.isDoorsBroken) {
                 Thread.sleep(5000);
-                System.out.println("[" + this.getName() + "]: doors fixed, resuming");
+                // System.out.println("[" + this.getName() + "]: doors fixed, resuming");
                 this.fixDoors();
             }
     
