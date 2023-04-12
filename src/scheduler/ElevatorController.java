@@ -100,6 +100,7 @@ public class ElevatorController implements Runnable {
                     this.scheduler.floorRequests.add(request);
                     System.out.println("[" + this.getName() + "]: elevator is broken, returning request to scheduler");
                 }
+                this.scheduler.elevatorBroke();
                 throw new Exception("[" + this.getName() + "]: Elevator broken indefinitely");
             }
             this.elevatorInfo.setDoorsBroken(false);
@@ -133,6 +134,11 @@ public class ElevatorController implements Runnable {
                 // elevator took too long, therefore broken
                 this.elevatorInfo.setElevatorBroken(true);
                 this.socket.disconnect();
+                for (FloorRequest request : this.todoList) {
+                    this.scheduler.floorRequests.add(request);
+                    System.out.println("[" + this.getName() + "]: elevator is broken, returning request to scheduler");
+                }
+                this.scheduler.elevatorBroke();
                 throw new Exception("[" + this.getName() + "]: Elevator broken indefinitely (after custom timeout)");
             }
             int location = (byte) receiveBytes[0];
@@ -223,6 +229,7 @@ public class ElevatorController implements Runnable {
                     // System.out.println("[" + this.getName() + "]: elevator reached destination");
 
                     this.elevatorInfo.setOnStandby(true);
+                    this.scheduler.processedTask();
                 }
     
                 Thread.sleep(100);

@@ -4,4 +4,4 @@ elevator 0 3 5
 none 0 5 7
 doors 0 2 4
 none 0 6 2
-none 85 6 2
+none 5 6 2

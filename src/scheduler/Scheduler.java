@@ -14,11 +14,15 @@ public class Scheduler {
 	public Queue<FloorRequest> floorRequests; // requests from floor system
 	public List<ElevatorController> elevatorControllers;
 	public boolean isTest;
+	public int amountOfTasks;
+	public int tasksProcessed;
 
 	public Scheduler(boolean test) {
 		this.floorRequests = new LinkedList<>();
 		this.elevatorControllers = new LinkedList<>();
 		this.isTest = test;
+		this.amountOfTasks = 7;
+		this.tasksProcessed = 0;
 		
 		if (!this.isTest) {
 			// the elevator ports
@@ -113,9 +117,26 @@ public class Scheduler {
 		return null;
 	}
 
+	public void processedTask() {
+		this.tasksProcessed++;
+
+		// System.out.println("Tasks processed: " + this.tasksProcessed);
+	}
+
+	public void elevatorBroke() {
+		this.amountOfTasks--;
+	}
+
 	public void start() {
+		long start = System.nanoTime();
 		try {
 			while (true) {
+				if (this.tasksProcessed == this.amountOfTasks) {
+					long elapsedTime = System.nanoTime() - start;
+					System.out.println("The program took " + elapsedTime / 1000000000 + " seconds to run");
+					this.amountOfTasks = 0;
+				}
+
 				FloorRequest floorRequest = this.floorRequests.poll();
 				if (floorRequest != null) {
 					// System.out.println("[Scheduler]: found a new floor request");
