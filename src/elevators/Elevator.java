@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.util.Stack;
 
 import shared.Engine;
 import shared.FloorRequest;
@@ -308,6 +309,12 @@ public class Elevator implements Runnable {
         System.out.println("[" + this.getName() + "]: " + startingFloor);
         int currentFloor = startingFloor;
 
+        Stack<Integer> journey = new Stack<>();
+        journey.add((Integer) destinationFloor);
+        while (!journey.empty()) {
+            
+        }
+
         for (int floorsTraversed = 0; floorsTraversed < floorDifference; floorsTraversed++) {
             try {
                 Thread.sleep(singleFloorDelay);
@@ -330,6 +337,7 @@ public class Elevator implements Runnable {
              * keep track of all the floors it needs to go to drop off the passengers)
              */
 
+            // send location of elevator to controller
             byte[] sendBytes = new byte[] { (byte) currentFloor };
             try {
                 this.sendPacket = new DatagramPacket(sendBytes, sendBytes.length);
@@ -337,6 +345,11 @@ public class Elevator implements Runnable {
             } catch (Exception e) {
                 System.out.println(e);
             }
+
+            // get current destination of controller
+            byte[] receiveBytes = new byte[1];
+            this.receivePacket = new DatagramPacket(receiveBytes, receiveBytes.length);
+
         }
     }
 

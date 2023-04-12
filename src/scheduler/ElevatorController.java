@@ -8,6 +8,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Stack;
 
 import shared.Engine;
 import shared.FloorRequest;
@@ -18,6 +20,7 @@ public class ElevatorController implements Runnable {
     public ElevatorInfo elevatorInfo;
     public int controllerPort;
     public ArrayList<FloorRequest> todoList;
+    public Stack<FloorRequest> journey;
     private Engine mockEngine;
 
     private int doorsTimeout;
@@ -30,6 +33,7 @@ public class ElevatorController implements Runnable {
         this.elevatorPort = elevatorPort;
         this.controllerPort = elevatorPort + 10;
         this.todoList = new ArrayList<>();
+        this.journey = new Stack<>();
         this.mockEngine = new Engine(10, 1.1, 3, 2, 0.3, 4);
 
         this.doorsTimeout = 3000;
@@ -112,21 +116,14 @@ public class ElevatorController implements Runnable {
     }
 
     private void trackLocation(int origin, int end) throws Exception {
+        long singleFloorDelay = estimateSingleFloorDelay(origin, end);
+        this.socket.setSoTimeout((int) singleFloorDelay);
+        
         byte[] receiveBytes = new byte[1];
         this.receivePacket = new DatagramPacket(receiveBytes, receiveBytes.length);
-        
-        // Set timeout to be the time it takes to traverse a single floor
-        int floorDifference = Math.abs(origin - end);
-        long tripDelay = (long) this.mockEngine.traverseFloors(origin, end) * 1000; // in milliseconds
-        if (floorDifference > 0) {
-            long singleFloorDelay = ((tripDelay) / floorDifference) * 3;
-            this.socket.setSoTimeout((int) singleFloorDelay);
-        } else {
-            // loading process is one second
-            this.socket.setSoTimeout(1000 * 3);
-        }
-        
-        while (this.elevatorInfo.getCurrentFloor() != end && !this.elevatorInfo.isElevatorBroken()) {
+
+        while (!journey.isEmpty() && !this.elevatorInfo.isElevatorBroken()) {
+            // get location of elevator
             try {
                 this.socket.receive(this.receivePacket);
             } catch (SocketTimeoutException e) {
@@ -136,12 +133,94 @@ public class ElevatorController implements Runnable {
                 throw new Exception("[" + this.getName() + "]: Elevator broken indefinitely (after custom timeout)");
             }
             int location = (byte) receiveBytes[0];
-            // System.out.println("[" + this.getName() + "]: elevator's current position is: " + location);
             this.elevatorInfo.setCurrentFloor(location);
-        }   
+            // System.out.println("[" + this.getName() + "]: elevator's current position is: " + location);
+
+            // check if there is a task that we can take, then adjust timeout
+            FloorRequest newTask = this.findTaskBeforeDestination(journey.peek().getDestination());
+            if (newTask != null) {
+                this.todoList.remove(newTask);
+                this.journey.add(newTask);
+                singleFloorDelay = estimateSingleFloorDelay(this.elevatorInfo.getCurrentFloor(), this.journey.peek().getDestination());
+                this.socket.setSoTimeout((int) singleFloorDelay);
+            }
+
+            // send current destination to elevator
+            byte[] sendBytes = new byte[] { (byte) this.journey.peek().getDestination() };
+            try {
+                this.sendPacket = new DatagramPacket(sendBytes, sendBytes.length);
+                this.socket.send(this.sendPacket);
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+            
+            // check if we reached the destination
+            boolean reachedDestination = this.elevatorInfo.getCurrentFloor() == journey.peek().getDestination();
+            if (reachedDestination) {
+                journey.pop();
+                Thread.sleep(100);
+            }
+        }
+        // while (!journey.isEmpty()) {
+        //     boolean atDestination = this.elevatorInfo.getCurrentFloor() == end;
+        //     boolean isBroken = this.elevatorInfo.isDoorsBroken();
+        //     if (atDestination || isBroken) break;
+            
+        //     boolean 
+        //     try {
+        //         this.socket.receive(this.receivePacket);
+        //     } catch (SocketTimeoutException e) {
+        //         // elevator took too long, therefore broken
+        //         this.elevatorInfo.setElevatorBroken(true);
+        //         this.socket.disconnect();
+        //         throw new Exception("[" + this.getName() + "]: Elevator broken indefinitely (after custom timeout)");
+        //     }
+        //     int location = (byte) receiveBytes[0];
+        //     // System.out.println("[" + this.getName() + "]: elevator's current position is: " + location);
+        //     this.elevatorInfo.setCurrentFloor(location);
+        // }   
 
         // Set timeout back to infinite
         this.socket.setSoTimeout(0);
+    }
+
+    private void completedTask() {
+        journey.pop();
+        // increment something in scheduler
+    }
+
+    private long estimateSingleFloorDelay(int origin, int end) {
+        int floorDifference = Math.abs(origin - end);
+        long tripDelay = (long) this.mockEngine.traverseFloors(origin, end) * 1000; // in milliseconds
+        if (floorDifference > 0) {
+            long singleFloorDelay = ((tripDelay) / floorDifference) * 3;
+            return singleFloorDelay;
+        } else {
+            return 3000;
+        }
+    }
+
+    private FloorRequest findTaskBeforeDestination(int destination) {
+        int elevatorLocation = this.elevatorInfo.getCurrentFloor();
+        // int destination = this.journey.firstElement().getDestination();
+        boolean isAscending = this.elevatorInfo.getCurrentFloor() < destination;
+
+        for (FloorRequest floorRequest: this.todoList) {
+            int passengerDestination = floorRequest.getDestination();
+            int passengerLocation = floorRequest.getFloor();    
+
+            if (passengerDestination == destination) {
+                boolean isWithinRange = isAscending ?
+                    passengerLocation > elevatorLocation && passengerLocation < destination :
+                    passengerLocation < elevatorLocation && passengerLocation > destination;
+                
+                if (isWithinRange) {
+                    return floorRequest;
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -198,7 +277,7 @@ public class ElevatorController implements Runnable {
                 boolean hasFloorRequests = !this.todoList.isEmpty();
                 if (hasFloorRequests) {
                     FloorRequest floorRequest = this.todoList.remove(this.findClosestTask());
-                    
+                    this.journey.add(floorRequest);
                     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                     ObjectOutput objectOutput = new ObjectOutputStream(outputStream);
                     objectOutput.writeObject(floorRequest);
