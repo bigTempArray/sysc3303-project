@@ -42,7 +42,10 @@ public class SchedulerTest{
 		car.setCurrentFloor(currentFloor);
 		car.setAscending(ascending);
 		car.setOnStandby(onStandby);
-		// control = new ElevatorController(getRandomPortNumber(), car);
+		control = new ElevatorController(scheduler, getRandomPortNumber(), true);
+		control.elevatorInfo.setCurrentFloor(currentFloor);
+		control.elevatorInfo.setAscending(ascending);
+		control.elevatorInfo.setOnStandby(onStandby);
 		control.socket.close();
 		return control;
 	}

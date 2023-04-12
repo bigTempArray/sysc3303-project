@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import scheduler.ElevatorController;
 import scheduler.ElevatorInfo;
+import scheduler.Scheduler;
 import shared.FloorRequest;
 
 
@@ -25,7 +26,7 @@ import shared.FloorRequest;
 public class ElevatorControllerTest {
 	
 	ElevatorController control;
-	ElevatorInfo car;
+	Scheduler scheduler;
 		
 	//Helper functions to reduce repeating code in unit tests
 	/**
@@ -38,7 +39,7 @@ public class ElevatorControllerTest {
 	 * @return the request object created from imposed parameters
 	 */
 	public FloorRequest generateRequest(int time, int floor, int destination) {
-		FloorRequest request = new FloorRequest(time, floor, destination);
+		FloorRequest request = new FloorRequest(time, floor, destination, "n/a");
 		return request;
 	}
 	
@@ -47,17 +48,16 @@ public class ElevatorControllerTest {
 	 * The following parameters are used to set the associated elevator 
 	 * info attribute of the control object instance. 
 	 * 
-	 * @param currentFloor 
-	 * @param ascending
-	 * @param onStandby
+	 * @param currentFloor current floor of the controlled car
+	 * @param ascending current direction of the controlled car
+	 * @param onStandby if the controlled car is on standby
 	 * 
 	 */
 	public void igniteControl(int currentFloor, boolean ascending, boolean onStandby) {
-		car = new ElevatorInfo();
-		car.setCurrentFloor(currentFloor);
-		car.setAscending(ascending);
-		car.setOnStandby(onStandby);
-		control = new ElevatorController(getRandomPortNumber(), car);
+		control = new ElevatorController(scheduler, getRandomPortNumber(), true);
+		control.elevatorInfo.setCurrentFloor(currentFloor);
+		control.elevatorInfo.setAscending(ascending);
+		control.elevatorInfo.setOnStandby(onStandby);
 		control.socket.close();
 	}
 	
@@ -75,7 +75,7 @@ public class ElevatorControllerTest {
 	 */
 	public void populateToDoList(int[] startFloors) {
 		for (int index = 0; index < startFloors.length; index++) {
-			FloorRequest call = new FloorRequest(0, startFloors[index], startFloors[index] + 5);
+			FloorRequest call = new FloorRequest(0, startFloors[index], startFloors[index] + 5, "n/a");
 			control.todoList.add(call);
 		}
 	}
