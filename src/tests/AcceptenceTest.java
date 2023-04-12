@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.Test;
 
+import elevators.Elevator;
 import scheduler.ElevatorController;
 import scheduler.Scheduler;
 import shared.FloorRequest;
@@ -17,10 +18,18 @@ public class AcceptenceTest {
 	@Test
 	public void testOnePassenge() {
 		scheduler=new Scheduler(true);
-		scheduler.elevatorControllers.add(new ElevatorController(scheduler, 0, true));
+		scheduler.elevatorControllers.add(new ElevatorController(scheduler, 30, true));
 		scheduler.floorRequests.add(new FloorRequest(4,2,0,"none"));
 		int bestEle=scheduler.findBestElevator(0);
+		Elevator elevator = new Elevator(20, 30);
 		ElevatorController bestController=scheduler.elevatorControllers.get(bestEle);
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				elevator.run();
+			}
+		}).start();
 
 		new Thread(new Runnable() {
 			@Override

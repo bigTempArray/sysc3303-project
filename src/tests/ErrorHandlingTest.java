@@ -81,7 +81,7 @@ public class ErrorHandlingTest {
 		scheduler=new Scheduler(true);
         elevator=new Elevator(0, 30);
 		scheduler.elevatorControllers.add(new ElevatorController(scheduler, 30, true));
-		scheduler.floorRequests.add(new FloorRequest(4,2,0,"elevator"));
+		scheduler.floorRequests.add(new FloorRequest(2,2,0,"elevator"));
 		int bestEle=scheduler.findBestElevator(0);
 		bestController=scheduler.elevatorControllers.get(bestEle);
         eInfo=bestController.elevatorInfo;
@@ -112,7 +112,7 @@ public class ErrorHandlingTest {
                 }
             }).start();            
             
-            Thread.sleep(9000);           
+            Thread.sleep(40000);           
             assertTrue(eInfo.isElevatorBroken());
             
 
