@@ -22,7 +22,7 @@ public class ErrorHandlingTest {
     @Test
 	public void doorErrorTest() {
 		scheduler=new Scheduler(true);
-        elevator=new Elevator(0, 20);
+        elevator=new Elevator(0, 30);
 		scheduler.elevatorControllers.add(new ElevatorController(scheduler, 30, true));
 		scheduler.floorRequests.add(new FloorRequest(4,2,0,"doors"));
 		int bestEle=scheduler.findBestElevator(0);
