@@ -134,6 +134,7 @@ public class Scheduler {
 				if (this.tasksProcessed == this.amountOfTasks) {
 					long elapsedTime = System.nanoTime() - start;
 					System.out.println("The program took " + elapsedTime / 1000000000 + " seconds to run");
+					System.out.println("AVG request time was " + (elapsedTime / 1000000000)/tasksProcessed +" seconds");
 					this.amountOfTasks = 0;
 				}
 
