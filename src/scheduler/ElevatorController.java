@@ -124,6 +124,8 @@ public class ElevatorController implements Runnable {
 
         while (!journey.isEmpty() && !this.elevatorInfo.isElevatorBroken()) {
             // get location of elevator
+
+            System.out.println("Controller single floor delay: " + singleFloorDelay);
             try {
                 this.socket.receive(this.receivePacket);
             } catch (SocketTimeoutException e) {
@@ -137,8 +139,10 @@ public class ElevatorController implements Runnable {
             // System.out.println("[" + this.getName() + "]: elevator's current position is: " + location);
 
             // check if there is a task that we can take, then adjust timeout
+            System.out.println("Todo list size: " + this.todoList.size());
             FloorRequest newTask = this.findTaskBeforeDestination(journey.peek().getDestination());
             if (newTask != null) {
+                // System.out.println("Added new task to journey");
                 this.todoList.remove(newTask);
                 this.journey.add(newTask);
                 singleFloorDelay = estimateSingleFloorDelay(this.elevatorInfo.getCurrentFloor(), this.journey.peek().getDestination());
@@ -146,7 +150,8 @@ public class ElevatorController implements Runnable {
             }
 
             // send current destination to elevator
-            byte[] sendBytes = new byte[] { (byte) this.journey.peek().getDestination() };
+            // System.out.println("Current destination: " + this.journey.peek().getFloor());
+            byte[] sendBytes = new byte[] { (byte) this.journey.peek().getFloor() };
             try {
                 this.sendPacket = new DatagramPacket(sendBytes, sendBytes.length);
                 this.socket.send(this.sendPacket);
@@ -201,21 +206,36 @@ public class ElevatorController implements Runnable {
     }
 
     private FloorRequest findTaskBeforeDestination(int destination) {
-        int elevatorLocation = this.elevatorInfo.getCurrentFloor();
-        // int destination = this.journey.firstElement().getDestination();
-        boolean isAscending = this.elevatorInfo.getCurrentFloor() < destination;
-
-        for (FloorRequest floorRequest: this.todoList) {
-            int passengerDestination = floorRequest.getDestination();
-            int passengerLocation = floorRequest.getFloor();    
-
-            if (passengerDestination == destination) {
-                boolean isWithinRange = isAscending ?
-                    passengerLocation > elevatorLocation && passengerLocation < destination :
-                    passengerLocation < elevatorLocation && passengerLocation > destination;
-                
-                if (isWithinRange) {
-                    return floorRequest;
+        if (this.todoList.size() > 0) {
+            int elevatorLocation = this.elevatorInfo.getCurrentFloor();
+            // int destination = this.journey.firstElement().getDestination();
+            boolean isAscending = this.elevatorInfo.getCurrentFloor() < destination;
+    
+            for (FloorRequest floorRequest: this.todoList) {
+                int passengerDestination = floorRequest.getDestination();
+                int passengerLocation = floorRequest.getFloor();    
+    
+                if (isAscending) {
+                    if (passengerDestination >= elevatorLocation && passengerDestination <= destination) {
+                        boolean isWithinRange = isAscending ?
+                            passengerLocation > elevatorLocation && passengerLocation < destination :
+                            passengerLocation < elevatorLocation && passengerLocation > destination;
+                        
+                        if (isWithinRange) {
+                            return floorRequest;
+                        }
+                    }
+    
+                } else {
+                    if (passengerDestination <= elevatorLocation && passengerDestination >= destination) {
+                        boolean isWithinRange = isAscending ?
+                            passengerLocation > elevatorLocation && passengerLocation < destination :
+                            passengerLocation < elevatorLocation && passengerLocation > destination;
+                        
+                        if (isWithinRange) {
+                            return floorRequest;
+                        }
+                    }
                 }
             }
         }

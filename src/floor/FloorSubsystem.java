@@ -78,7 +78,7 @@ public class FloorSubsystem {
         String faultType;
         Queue<FloorRequest> passengerList = new LinkedList<>();
         try {
-            Scanner floorFile = new Scanner(new File("src/input.txt"));
+            Scanner floorFile = new Scanner(new File("src/inputs/simple.txt"));
 
             while (floorFile.hasNextLine()) {
 

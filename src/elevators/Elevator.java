@@ -223,7 +223,7 @@ public class Elevator implements Runnable {
                     this.breakElevator();
                 }
 
-                this.traverseFloor(this.carLocation, passengerFloor);
+                this.traverseFloor(this.carLocation, passengerFloor, false);
                 this.state = ElevatorState.stopped;
                 this.carLocation = passengerFloor;
 
@@ -247,7 +247,7 @@ public class Elevator implements Runnable {
                 } else if (destination < carLocation) {
                     this.state = ElevatorState.traversingDown;
                 }
-                this.traverseFloor(this.carLocation, destination);
+                this.traverseFloor(this.carLocation, destination, false);
                 
                 // reached destination
                 this.state = ElevatorState.stopped;
@@ -284,7 +284,7 @@ public class Elevator implements Runnable {
      * @param startingFloor    the floor in which the car starts at
      * @param destinationFloor the floor the car needs to stop at
      */
-    private void traverseFloor(int startingFloor, int destinationFloor) {
+    private void traverseFloor(int startingFloor, int destinationFloor, boolean isRecursing) {
         int floorDifference = Math.abs(destinationFloor - startingFloor);
 
         if (floorDifference == 0) {
@@ -303,42 +303,32 @@ public class Elevator implements Runnable {
 
         // Calculating total trip delay
         long tripDelay = (long) motor.traverseFloors(startingFloor, destinationFloor) * 1000; // Converting to
-                                                                                              // milliseconds
         long singleFloorDelay = tripDelay / floorDifference; // Crude representation of time each floor car will be at
+                                                                                              // milliseconds
+        // 1                10 -> 25
+        //    3             10 -> 20
 
         System.out.println("[" + this.getName() + "]: " + startingFloor);
-        int currentFloor = startingFloor;
 
-        Stack<Integer> journey = new Stack<>();
-        journey.add((Integer) destinationFloor);
-        while (!journey.empty()) {
-            
-        }
+        //       1               10 3000
+        //       3               10 2500
+        //         
+        while (carLocation != destinationFloor) {
+            // if receive new destination
+                // traverseFloor(carlocation, newDestination)
+            // if (!isRecursing) {
+                System.out.println("Elevator single floor delay: " + singleFloorDelay);
+                try {
+                    Thread.sleep(singleFloorDelay);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            // }
 
-        for (int floorsTraversed = 0; floorsTraversed < floorDifference; floorsTraversed++) {
-            try {
-                Thread.sleep(singleFloorDelay);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            // Increments or decrements based on which direction the elevator is moving
-            currentFloor = (this.getState() == ElevatorState.traversingUp) ? currentFloor + 1 : currentFloor - 1;
-            System.out.println("[" + this.getName() + "]: " + currentFloor);
-            /**
-             * Perhaps this is where for the UDP implementation you send a datagram to the
-             * scheduler to let it know that this elevator is now on the current floor it is
-             * at.
-             * Then if it receives a reply or anything of the sort (for stopping somewhere
-             * in the middle
-             * of the trip) then it calls this function again (or make another function) to
-             * make the
-             * extra stop before continuing on its way. (Maybe use the buttonsPressed[]
-             * array to
-             * keep track of all the floors it needs to go to drop off the passengers)
-             */
-
+            carLocation = (this.getState() == ElevatorState.traversingUp) ? carLocation + 1 : carLocation - 1;
+            System.out.println("[" + this.getName() + "]: " + carLocation);
             // send location of elevator to controller
-            byte[] sendBytes = new byte[] { (byte) currentFloor };
+            byte[] sendBytes = new byte[] { (byte) carLocation };
             try {
                 this.sendPacket = new DatagramPacket(sendBytes, sendBytes.length);
                 this.socket.send(this.sendPacket);
@@ -349,8 +339,55 @@ public class Elevator implements Runnable {
             // get current destination of controller
             byte[] receiveBytes = new byte[1];
             this.receivePacket = new DatagramPacket(receiveBytes, receiveBytes.length);
+            try {
+                this.socket.receive(this.receivePacket);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            int currentDestination = (byte) receiveBytes[0];
 
+            if (currentDestination != destinationFloor) {
+                System.out.println("recursing");
+                traverseFloor(carLocation, currentDestination, true);
+            }
         }
+
+        // for (int floorsTraversed = 0; floorsTraversed < floorDifference; floorsTraversed++) {
+        //     try {
+        //         Thread.sleep(singleFloorDelay);
+        //     } catch (InterruptedException e) {
+        //         e.printStackTrace();
+        //     }
+        //     // Increments or decrements based on which direction the elevator is moving
+        //     currentFloor = (this.getState() == ElevatorState.traversingUp) ? currentFloor + 1 : currentFloor - 1;
+        //     System.out.println("[" + this.getName() + "]: " + currentFloor);
+        //     /**
+        //      * Perhaps this is where for the UDP implementation you send a datagram to the
+        //      * scheduler to let it know that this elevator is now on the current floor it is
+        //      * at.
+        //      * Then if it receives a reply or anything of the sort (for stopping somewhere
+        //      * in the middle
+        //      * of the trip) then it calls this function again (or make another function) to
+        //      * make the
+        //      * extra stop before continuing on its way. (Maybe use the buttonsPressed[]
+        //      * array to
+        //      * keep track of all the floors it needs to go to drop off the passengers)
+        //      */
+
+        //     // send location of elevator to controller
+        //     byte[] sendBytes = new byte[] { (byte) currentFloor };
+        //     try {
+        //         this.sendPacket = new DatagramPacket(sendBytes, sendBytes.length);
+        //         this.socket.send(this.sendPacket);
+        //     } catch (Exception e) {
+        //         System.out.println(e);
+        //     }
+
+        //     // get current destination of controller
+        //     byte[] receiveBytes = new byte[1];
+        //     this.receivePacket = new DatagramPacket(receiveBytes, receiveBytes.length);
+
+        // }
     }
 
     private void setDoorState(boolean doorsOpen) {
@@ -392,7 +429,7 @@ public class Elevator implements Runnable {
     }
 
     public static void main(String[] args) {
-        for (int i = 30; i < 33; i++) {
+        for (int i = 30; i < 31; i++) {
             Thread elevatorThread = new Thread(new Elevator(20, i));
             elevatorThread.start();
         }
