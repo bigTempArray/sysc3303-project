@@ -290,7 +290,6 @@ public class Elevator implements Runnable {
             try {
                 // loading process
                 Thread.sleep(1000);
-
                 byte[] sendBytes = new byte[] { (byte) this.carLocation };
                 this.sendPacket = new DatagramPacket(sendBytes, sendBytes.length);
                 this.socket.send(this.sendPacket);
@@ -377,8 +376,8 @@ public class Elevator implements Runnable {
     }
 
     public static void main(String[] args) {
-        for (int i = 30; i < 33; i++) {
-            Thread elevatorThread = new Thread(new Elevator(20, i));
+        for (int i = 30; i < 34; i++) {
+            Thread elevatorThread = new Thread(new Elevator(22, i));
             elevatorThread.start();
         }
     }

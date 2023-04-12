@@ -126,8 +126,8 @@ public class ElevatorController implements Runnable {
             // loading process is one second
             this.socket.setSoTimeout(1000 * 3);
         }
-        
-        while (this.elevatorInfo.getCurrentFloor() != end && !this.elevatorInfo.isElevatorBroken()) {
+
+        if (this.elevatorInfo.getCurrentFloor() == end) {
             try {
                 this.socket.receive(this.receivePacket);
             } catch (SocketTimeoutException e) {
@@ -141,11 +141,30 @@ public class ElevatorController implements Runnable {
                 this.scheduler.elevatorBroke();
                 throw new Exception("[" + this.getName() + "]: Elevator broken indefinitely (after custom timeout)");
             }
-            int location = (byte) receiveBytes[0];
+            int location = (int) receiveBytes[0];
             System.out.println("[" + this.getName() + "]: location: " + location + " -> " + end);
             this.elevatorInfo.setCurrentFloor(location);
-        }   
-
+        } else {
+            while (this.elevatorInfo.getCurrentFloor() != end && !this.elevatorInfo.isElevatorBroken()) {
+                try {
+                    this.socket.receive(this.receivePacket);
+                } catch (SocketTimeoutException e) {
+                    // elevator took too long, therefore broken
+                    this.elevatorInfo.setElevatorBroken(true);
+                    this.socket.disconnect();
+                    for (FloorRequest request : this.todoList) {
+                        this.scheduler.floorRequests.add(request);
+                        System.out.println("[" + this.getName() + "]: elevator is broken, returning request to scheduler");
+                    }
+                    this.scheduler.elevatorBroke();
+                    throw new Exception("[" + this.getName() + "]: Elevator broken indefinitely (after custom timeout)");
+                }
+                int location = (int) receiveBytes[0];
+                System.out.println("[" + this.getName() + "]: location: " + location + " -> " + end);
+                this.elevatorInfo.setCurrentFloor(location);
+            }   
+        }
+        
         // Set timeout back to infinite
         this.socket.setSoTimeout(0);
     }

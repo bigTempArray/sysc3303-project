@@ -26,7 +26,7 @@ public class Scheduler {
 		
 		if (!this.isTest) {
 			// the elevator ports
-			for (int i = 30; i < 33; i++) {
+			for (int i = 30; i < 34; i++) {
 				
 
 				// create a thread to control the elevator
